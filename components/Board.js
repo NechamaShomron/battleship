@@ -26,7 +26,7 @@ export default function Board(props) {
 
   return (
     <>
-    <h1>Waterbound Fighting Vessels</h1>
+    <h1 className="center">Waterbound Fighting Vessels</h1>
     <hr />
     <br />
     <h2>Press to rotate and drag to move your ships!</h2>

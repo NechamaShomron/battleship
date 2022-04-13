@@ -1,7 +1,7 @@
 html,.container {
+  margin-left: auto;
   min-height: 100vh;
   padding: 0 0.5rem;
-  display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -10,23 +10,20 @@ html,.container {
   background: -moz-linear-gradient(top left, #1e1377, #698bc3);
   background: linear-gradient(to bottom right, #1e1377, #698bc3);
 }
-
-.main {
-  min-height: 100vh;
-  padding: 4rem 0;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+body {
+  font: 14px "Century Gothic", Futura, sans-serif;
+  margin: 20px;
+  margin-right: auto;
+}
+.center{
+  text-align: center;
+}
+.center-block {
+  display: block;
+  margin-right: auto;
+  margin-left: auto;
 }
 
-  body {
-    font: 14px "Century Gothic", Futura, sans-serif;
-    margin: 20px;
-    margin-right: auto;
-  }
-  
   .square {
     background: #fff;
     border: 1px solid #999;

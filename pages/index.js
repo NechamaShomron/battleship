@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import Head from "next/head"
 import io from 'Socket.IO-client';
-import Game from '../components/Game' 
+import Game from '../components/Game' ;
+import Button from '@mui/material/Button';
+
 let socket;
 
 const Home = () => {
@@ -50,10 +52,10 @@ const Home = () => {
         </Head>
         {showWelcome &&
         <main>
-          <h1>Welcome to Battleship!</h1>
+          <h1 className="center">Welcome to Battleship!</h1>
           <br />
-          <h2>Choose the board size:{" "}</h2>
-          <input
+          <h2 className="center">Choose the board size:{" "}</h2>
+          <input  class="center-block"
           onChange={onChangeHandler}
             value={userInput}
             type="number"
@@ -61,16 +63,14 @@ const Home = () => {
             max={15}
             placeholder="10-15" /> 
             
-            <br /> <br /> <br />
-         <button onClick={showBoardComponent}>Done</button>
+            <br /> <br />
+         <Button class="center-block" onClick={showBoardComponent} variant="contained" size="medium">Done</Button>
          </main>
-}  
-<br />
+}   
+      <br />
       { !showWelcome && <Game boardSize={boardSize} />}
       </>
      )
       }
     
-    
-
 export default Home;
