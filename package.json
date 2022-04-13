@@ -16,6 +16,7 @@
     "express": "^4.17.3",
     "next": "12.1.4",
     "react": "^18.0.0",
+    "react-css-grid": "^2.0.0-0",
     "react-dom": "18.0.0",
     "socket.io": "^4.4.1",
     "socket.io-client": "^4.4.1"

@@ -1,35 +1,40 @@
-import React from 'react'
+import React, { useState } from "react";
+
 import Square from "./Square";
 
-export class Board extends React.Component {
-    renderSquare(i) {
-      return (
-        <Square
-          value={this.props.squares[i]}
-          onClick={() => this.props.onClick(i)}
-        />
-      );
+export default function Board(props) {
+ 
+      //return each square
+  function renderSquare([i,j]){
+    return (
+      <Square
+        value={[i,j]}
+        onClick={() => this.props.onClick([i,j])}
+      />
+     )}
+
+  //board of all the squares
+  function createBoard(){
+    let squaresInRow= [];
+    for(let i=0; i<props.boardSize; i++){
+      for(let j=0; j<props.boardSize; j++){
+       squaresInRow.push(renderSquare([i,j]));         
+       }
     }
-  
-    render() {
-      return (
-        <div>
-          <div className="board-row">
-            {this.renderSquare(0)}
-            {this.renderSquare(1)}
-            {this.renderSquare(2)}
-          </div>
-          <div className="board-row">
-            {this.renderSquare(3)}
-            {this.renderSquare(4)}
-            {this.renderSquare(5)}
-          </div>
-          <div className="board-row">
-            {this.renderSquare(6)}
-            {this.renderSquare(7)}
-            {this.renderSquare(8)}
-          </div>
-        </div>
-      );
+    return squaresInRow;
     }
-  }
+
+  return (
+    <>
+    <h1>Waterbound Fighting Vessels</h1>
+    <hr />
+    <br />
+    <h2>Press to rotate and drag to move your ships!</h2>
+    <div style={{width:`${props.boardSize*40}px`}}>
+    {createBoard()}
+    </div>
+
+        
+    </>
+  );
+}
