@@ -3,6 +3,8 @@ import Head from "next/head"
 import io from 'Socket.IO-client';
 import Game from '../components/Game' ;
 import Button from '@mui/material/Button';
+import SendIcon from '@mui/icons-material/Send';
+
 
 let socket;
 
@@ -19,12 +21,13 @@ const Home = () => {
     socket = io()
 
     socket.on('connect', () => {
-      console.log('connected')
+      console.log('connected client')
     })
 
     socket.on('update-input', msg => {
       setBoardSize(msg)
     })
+    socket.emit('create', 'room1');
   }
 
   const onChangeHandler = (e) => {
@@ -52,23 +55,24 @@ const Home = () => {
         </Head>
         {showWelcome &&
         <main>
-          <h1 className="center">Welcome to Battleship!</h1>
+          <h1>Welcome to Battleship!</h1>
           <br />
-          <h2 className="center">Choose the board size:{" "}</h2>
-          <input  class="center-block"
+          <label>Choose the board size:{" "}
+          <input
           onChange={onChangeHandler}
             value={userInput}
             type="number"
             min={10}
             max={15}
             placeholder="10-15" /> 
-            
-            <br /> <br />
-         <Button class="center-block" onClick={showBoardComponent} variant="contained" size="medium">Done</Button>
+            </label>    
+         <Button onClick={showBoardComponent} endIcon={<SendIcon />}>Done</Button>
          </main>
+
 }   
-      <br />
+<div>
       { !showWelcome && <Game boardSize={boardSize} />}
+      </div>
       </>
      )
       }

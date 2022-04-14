@@ -9,10 +9,9 @@ const SocketHandler = (req, res) => {
     res.socket.server.io = io
 
     io.on('connection', socket => {
-      // socket.on('input-change', msg => {
-      //   socket.broadcast.emit('update-input', msg)
-     // })
-     console.log("ws connected");
+      const clientID = socket.id;
+
+      console.log("server connected");
     })
   }
   res.end()

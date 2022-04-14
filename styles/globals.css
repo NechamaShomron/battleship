@@ -1,38 +1,32 @@
-html,.container {
-  margin-left: auto;
-  min-height: 100vh;
-  padding: 0 0.5rem;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background: #1e1377;
-  background: -webkit-linear-gradient(top left, #1e1377, #698bc3);
-  background: -moz-linear-gradient(top left, #1e1377, #698bc3);
-  background: linear-gradient(to bottom right, #1e1377, #698bc3);
+html{
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, orange 60%, cyan);
+
 }
 body {
   font: 14px "Century Gothic", Futura, sans-serif;
-  margin: 20px;
-  margin-right: auto;
-}
-.center{
-  text-align: center;
-}
-.center-block {
-  display: block;
-  margin-right: auto;
-  margin-left: auto;
 }
 
-  .square {
-    background: #fff;
-    border: 1px solid #999;
-    float: left;
-    font-size: 12px;
-    font-weight: bold;
-    line-height: 34px;
-    padding: 0;
-    text-align: center;
-    width: 40px;
+  .flex-container {
+    width: 70%;
+    margin: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    background-color: aliceblue;
+
   }
-  
+  .flex-item{
+  height: 20px;
+    border: 1px solid black;
+    background: #ececec;
+    width:40px;
+    padding: 7px;
+  }
+  .hold-boards{
+    display: flex;
+   
+  }
+  h2{
+    margin: 20px;
+  }
