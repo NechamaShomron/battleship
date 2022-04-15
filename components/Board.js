@@ -19,7 +19,6 @@ const size = +(props.boardSize) +1;
 
   //board of all the squares
   function createBoard(){
-    let isFirstLine = false
     let squaresInRow= [];
     for(let i=0; i<size; i++){
       for(let j=0; j<size; j++){

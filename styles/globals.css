@@ -17,7 +17,7 @@ body {
 
   }
   .flex-item{
-  height: 20px;
+    height: 20px;
     border: 1px solid black;
     background: #ececec;
     width:40px;
@@ -30,3 +30,11 @@ body {
   h2{
     margin: 20px;
   }
+  .place-center{
+    padding: 0px;
+  }
+  /* @media screen and (max-width: 575px) {
+    #main {
+      display: block;
+    }
+  } */
