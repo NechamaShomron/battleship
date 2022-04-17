@@ -1,10 +1,33 @@
-function ships(){
-     const allShips = [
-        { name: "Carrier", numOfTiles: 5 },
-        { name: "Battleship", numOfTiles: 4 },
-        { name: "Cruiser", numOfTiles: 3 },
-        { name: "Submarine", numOfTiles: 3 },
-        { name: "Destroyer", numOfTiles: 2 },
-      ];
-
-}
+const AVAILABLE_SHIPS = [
+  {
+    name: "Carrier",
+    length: 5,
+    value: 1,
+    placed: null,
+  },
+  {
+    name: "Battleship",
+    length: 4,
+    value: 2,
+    placed: null,
+  },
+  {
+    name: "Cruiser",
+    length: 3,
+    value: 3,
+    placed: null,
+  },
+  {
+    name: "Submarine",
+    length: 3,
+    value: 4,
+    placed: null,
+  },
+  {
+    name: "Destroyer",
+    length: 2,
+    value: 5,
+    placed: null,
+  },
+];
+module.exports.AVAILABLE_SHIPS = AVAILABLE_SHIPS;
