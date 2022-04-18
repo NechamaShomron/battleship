@@ -8,11 +8,15 @@ const SocketHandler = (req, res) => {
     const io = new Server(res.socket.server)
     res.socket.server.io = io
 
+    //handling connection
+    // requests and everything within that connection happens in the io.on block
     io.on('connection', socket => {
       const clientID = socket.id;
 
       console.log("server connected");
     })
+
+
   }
   res.end()
 }

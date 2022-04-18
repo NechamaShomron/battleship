@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import Square from "./Square";
 
+
 export default function Board(props) {
   const size = +props.boardSize;
-
-  //return each square
-  function renderSquare([i, j, boardType]) {
+   //return each square
+   function renderSquare([i, j, boardType]) {
     return (
       <Square
         value={props.value}
@@ -13,7 +13,8 @@ export default function Board(props) {
         key={Math.random()}
         position={[i, j]}
         boardType={boardType}
-        onClick={() => props.onClick(userBoard, boardType, [i, j])}
+        onClick={() => props.onClick(boardType, i, j)}
+        board={props.boardState}
       />
     );
   }
@@ -31,7 +32,6 @@ export default function Board(props) {
 
   let enemyBoard = createBoard("enemyBoard");
   let userBoard = createBoard("userBoard");
-
   return (
     <>
       <h1>Waterbound Fighting Vessels</h1>
@@ -39,7 +39,9 @@ export default function Board(props) {
       <br />
       <div className="hold-boards">
         <div className="left-side">
-          <h2>Drag to move your ships {"&"} press to rotate!</h2>
+          {props.gameState == 'placement' &&  <><h2>Place your ships!
+          <button className= "rotate-bttn ship" onClick={props.rotateShips}>Rotate ships</button></h2></>}
+          {props.gameState == "start-game" && <h2>My board!</h2>}
           <div className="flex-container">{userBoard}</div>
         </div>
 

@@ -1,19 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 
 export default function Square(props) {
   let sizeInRow = 100 / props.boardSize;
   let iPoint = props.position[0];
   let jPoint = props.position[1];
-  const [squareValue, setSuareValue] = useState(props.value);
-
+  let squareValue = iPoint*props.boardSize+jPoint;
   const handleClick = () => {
-    props.onClick(props.boardType, [(iPoint, jPoint)]);
+    props.onClick();
   };
 
   if (jPoint == 0 && iPoint != 0) {
     return (
       <button
-        className="flex-item place-center"
+        className="square-item place-center"
         style={{ flex: `1 0 ${sizeInRow}%` }}
       >
         {iPoint}
@@ -22,22 +21,43 @@ export default function Square(props) {
   } else if (jPoint != 0 && iPoint == 0) {
     return (
       <button
-        className="flex-item place-center"
+        className="square-item place-center"
         style={{ flex: `1 0 ${sizeInRow}%` }}
       >
         {(jPoint + 9).toString(36).toUpperCase()}
       </button>
     );
-  } else {
+  }else if (jPoint == 0 && iPoint == 0) {
     return (
       <button
-        className="flex-item"
+        className="square-item place-center"
         style={{ flex: `1 0 ${sizeInRow}%` }}
-        value={squareValue}
-        onClick={handleClick}
       >
-        {squareValue}
       </button>
     );
+  } else {
+    if(props.boardType == "userBoard"){
+      return (
+        <button
+          className={`square-item ${props.board[squareValue] == '0' ? '' : 'square-item-clicked'}`}
+          style={{ flex: `1 0 ${sizeInRow}%`}}
+          value={props.board[squareValue]}
+          onClick={handleClick}
+        >
+        </button>
+      );
+    }
+    else{
+      return (
+        <button
+          className={`square-item`}
+          style={{ flex: `1 0 ${sizeInRow}%`}}
+          value={0}
+          onClick={handleClick}
+        >
+        </button>
+      );
+    }
+   
   }
 }

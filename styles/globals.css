@@ -31,12 +31,38 @@ div {
   flex-wrap: wrap;
   background-color: aliceblue;
 }
-.flex-item {
-  height: 35px;
+.square-item {
   border: 1px solid black;
   background: #ececec;
-  width: 40px;
-  padding: 7px;
+  float: left;
+  font-size: 12px;
+  line-height: 20px;
+  height: 20px;
+  margin-right: -1px;
+  margin-top: -1px;
+  padding: 0;
+  text-align: center;
+  width: 20px;
+  flex: 1 1 10%;
+}
+
+.square-item-clicked {
+background-color: #4CAF50;
+}
+.ship{
+  background-color: #4CAF50; 
+  border: none;
+  color: white;
+  padding: 5px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+  font: 14px "Century Gothic", Futura, sans-serif;
+  border-radius: 5px;
+}
+.ship:hover {
+  background-color: #3e8e41;
 }
 .hold-boards {
   display: flex;
@@ -52,4 +78,8 @@ h2 {
   float: left;
   padding: 0px;
   margin: 0px 0px 0px 20px;
+}
+.rotate-bttn{
+  border-radius: 5px;
+  margin-left: 50px;
 }
