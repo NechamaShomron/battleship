@@ -11,6 +11,7 @@ function Game(props) {
   });
   const [rotation,setRotation] = useState("horizontal");
   const [availableShips, setAvailableShips] = useState(AVAILABLE_SHIPS);
+  const [message, setMessage] = useState("");
   
   const boardSize = +props.boardSize + 1;
   
@@ -21,23 +22,25 @@ function Game(props) {
     }
   }
   //board maintains the state of all squares
-  const [board, setBoard] = useState(
+  const [userBoard, setUserBoard] = useState(
     startingBoard);
+    const [enemyBoard, setEnemyBoard] = useState(
+      startingBoard);
   
   function placeHorizontal(i,j){
     if (j + shipSelected.length <= boardSize) {
       //check can position horizontal
       for (let k = 0; k < shipSelected.length; k++) {
-      if (board[i*boardSize+j+k] != "0") {
+      if (userBoard[i*boardSize+j+k] != "0") {
         return;
       }
     }
       let m = j;
-      let newBoard = board.slice();
+      let newUserBoard = userBoard.slice();
       for (let k = 0; k < shipSelected.length; k++) {
-        newBoard[(i*boardSize+m+k)] = "x";
+        newUserBoard[(i*boardSize+m+k)] = "x";
       }
-      setBoard(newBoard);
+      setUserBoard(newUserBoard);
       setShipSelected({
         name: "",
         value: "",
@@ -49,22 +52,29 @@ function Game(props) {
     if (i + shipSelected.length <= boardSize) {
       //check can position vertical
       for (let k = 0; k < shipSelected.length; k++) {
-      if (board[(i+k)*boardSize+j] != "0") {
+      if (userBoard[(i+k)*boardSize+j] != "0") {
         return;
       }
     }
       let m = j;
-      let newBoard = board.slice();
+      let newUserBoard = userBoard.slice();
       for (let k = 0; k < shipSelected.length; k++) {
-        newBoard[((i+k)*boardSize+m)] = "x";
+        newUserBoard[((i+k)*boardSize+m)] = "x";
       }
-      setBoard(newBoard);
+      setUserBoard(newUserBoard);
       setShipSelected({
         name: "",
         value: "",
         length: "",
       })
     }
+  }
+
+  function checkHitOrMiss(i,j){
+    let newEnemyBoard = enemyBoard.slice();
+    newEnemyBoard[(i*boardSize +j)] = "x";
+    setEnemyBoard(newEnemyBoard);
+
   }
   const handleClick = (boardType, i, j) => {
     if (boardType == "userBoard") {
@@ -77,9 +87,15 @@ function Game(props) {
           setGameState('start-game')
     //socket io add start
         }
+        console.log(boardType)
+
       
     } else if(boardType == "enemyBoard"){
-     
+      if(availableShips.length == 0){
+
+      checkHitOrMiss(i,j)
+     console.log(i,j)
+      }
     }
   };
   const handleClickShip = (event) => {
@@ -110,22 +126,33 @@ const rotateShips = () =>{
   }
   return (
     <>
-      <Board
+     <h1>Waterbound Fighting Vessels</h1>
+      <hr />
+      <br />
+      <div className="hold-boards">
+        <div className="left-side">
+          {gameState == 'placement' && <><h2>Place your ships!
+          <button className= "rotate-bttn ship" onClick={rotateShips}>Rotate ships</button></h2></>}
+          {gameState == "start-game" && <h2>My board!</h2>}
+          <div className="flex-container">
+            <Board
         onClick={(boardType, i, j) =>
-          handleClick(boardType, i, j)
+          handleClick(boardType,i, j)
         }
         gameState={gameState}
         boardSize={boardSize}
-        boardState={board}
+        boardState={userBoard}
         rotateShips={rotateShips}
-      />
-      {gameState == "placement" &&
+        boardType={"userBoard"}
+
+      /></div>
+         {gameState == "placement" &&
         availableShips.map((ship) => {
           return (
             <div className="shipsAvailable" key={ship.name}>
               <button
                 key={ship.name}
-                className="place-center ship"
+                className="ship-center ship"
                 onClick={handleClickShip}
                 name={ship.name}
               >
@@ -134,6 +161,24 @@ const rotateShips = () =>{
             </div>
           );
         })}
+        </div>
+
+        {<div className="right-side">
+          <h2>Guess enemy's ship's placements!</h2>
+      <div className="flex-container">
+        <Board
+        onClick={(boardType,i, j) =>
+          handleClick(boardType, i, j)
+        }
+        gameState={gameState}
+        boardSize={boardSize}
+        boardState={enemyBoard}
+        boardType={"enemyBoard"}
+      />
+      </div>
+      </div>
+      }
+    </div>
     </>
   );
 }

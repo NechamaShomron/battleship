@@ -5,6 +5,7 @@ export default function Square(props) {
   let iPoint = props.position[0];
   let jPoint = props.position[1];
   let squareValue = iPoint*props.boardSize+jPoint;
+  let boardType = props.boardType;
   const handleClick = () => {
     props.onClick();
   };
@@ -36,28 +37,18 @@ export default function Square(props) {
       </button>
     );
   } else {
-    if(props.boardType == "userBoard"){
       return (
         <button
-          className={`square-item ${props.board[squareValue] == '0' ? '' : 'square-item-clicked'}`}
+          className={`square-item ${boardType == 'userBoard' &&
+                    (props.board[squareValue] == '0' ? '' : 'square-item-clicked')}
+                    ${boardType == 'enemyBoard' &&  
+                   (props.board[squareValue] == '0' ? '' : 'hit')}`}
           style={{ flex: `1 0 ${sizeInRow}%`}}
           value={props.board[squareValue]}
           onClick={handleClick}
         >
         </button>
       );
-    }
-    else{
-      return (
-        <button
-          className={`square-item`}
-          style={{ flex: `1 0 ${sizeInRow}%`}}
-          value={0}
-          onClick={handleClick}
-        >
-        </button>
-      );
-    }
    
   }
 }

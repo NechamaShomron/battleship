@@ -74,12 +74,22 @@ h2 {
   padding: 0px;
 }
 .shipsAvailable {
-  width: 6%;
+  width: 12%;
   float: left;
   padding: 0px;
   margin: 0px 0px 0px 20px;
 }
+.ship-center{
+  padding: 0%;
+}
 .rotate-bttn{
   border-radius: 5px;
   margin-left: 50px;
+}
+
+.hit{
+background-color: red;
+}
+.miss{
+  background-color: #313432;
 }
