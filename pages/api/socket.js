@@ -1,31 +1,6 @@
 import { Server } from 'Socket.IO'
 
-let boardSet="";
-let queue = [];    // list of sockets waiting for peers
-let rooms = {};    // map socket.id => room
-
-function findPeerForLoneSocket(socket) {
-  if (queue.length) {
-    let peer = queue.pop();
-    let room = socket.id + '#' + peer.id;
-    let isFirstPlayer = true;
-    peer.join(room);
-    socket.join(room);
-    rooms[peer.id] = room;
-    rooms[socket.id] = room;
-    peer.emit('start game', !isFirstPlayer);
-    socket.emit('start game', isFirstPlayer);
-  } else {
-    queue.push(socket);
-    boardSet=""
-
-  }
-}
-
-function getPeer(room, socket) {
-  let peer = room.split('#');
-  return peer[0] === socket ? peer[1] : peer[0];
-}
+let boardSet = "";
 
 const SocketHandler = (req, res) => {
   if (res.socket.server.io) {
@@ -35,31 +10,45 @@ const SocketHandler = (req, res) => {
     const io = new Server(res.socket.server)
     res.socket.server.io = io
 
-    //handling connection
-    // requests and everything within that connection happens in the io.on block
-    io.on('connection', socket => {
-      const clientID = socket.id;
-      console.log(clientID)
-      socket.on('add player', () => {
-        findPeerForLoneSocket(socket);
-      });
-      socket.on('board-size-change', msg => {
-        let room = rooms[socket.id];
-        let peer = getPeer(room, socket.id);
-        socket.broadcast.to(peer).emit('board-size-update', msg)
-        boardSet=msg;
-      })
+    let roomNum = 1;
+    let rooms = {};
 
-      socket.on('board-size-req', msg => {
-        let room = rooms[socket.id];
-        let peer = getPeer(room, socket.id);
-        socket.broadcast.to(peer).emit('board-size-update', boardSet)
-      })
-      
+    io.on('connection', (socket) => {
       console.log("server connected");
+
+      rooms = io.sockets.adapter.rooms;
+      if (rooms.get(roomNum) && rooms.get(roomNum).size > 1) {
+        if (rooms.get(roomNum).size === 2) {
+          for (let i = 1; i <= roomNum; i++) {
+            //there is room in a room from start to end of rooms array
+            if (rooms.get(i).size < 2) {
+              roomNum = i;
+              break;
+              //there isn't room
+            } else {
+              roomNum++;
+              break;
+            }
+          }
+        }
+      }
+      socket.join(roomNum);
+      console.log(`player id: ${socket.id} is in room ${roomNum}`)
+
+      socket.on('board-size-change', msg => {
+        socket.broadcast.to(roomNum).emit('board-size', msg)
+        boardSet = msg;
+      })
+      socket.on('board-size-req', msg => {
+        socket.broadcast.emit('board-size-update', boardSet)
+      })
+      socket.on('disconnect', () => {
+        console.log(`player ${socket.id} disconnected.`);
+     });
+
     })
 
-
+   
   }
   res.end()
 }
