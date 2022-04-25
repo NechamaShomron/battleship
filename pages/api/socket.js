@@ -13,10 +13,12 @@ function findPeerForLoneSocket(socket) {
     socket.join(room);
     rooms[peer.id] = room;
     rooms[socket.id] = room;
-    peer.emit('start game', isFirstPlayer);
-    socket.emit('start game', !isFirstPlayer);
+    peer.emit('start game', !isFirstPlayer);
+    socket.emit('start game', isFirstPlayer);
   } else {
     queue.push(socket);
+    boardSet=""
+
   }
 }
 
@@ -42,12 +44,16 @@ const SocketHandler = (req, res) => {
         findPeerForLoneSocket(socket);
       });
       socket.on('board-size-change', msg => {
-        socket.broadcast.emit('board-size-update', msg)
+        let room = rooms[socket.id];
+        let peer = getPeer(room, socket.id);
+        socket.broadcast.to(peer).emit('board-size-update', msg)
         boardSet=msg;
       })
 
       socket.on('board-size-req', msg => {
-        socket.broadcast.emit('board-size-update', boardSet)
+        let room = rooms[socket.id];
+        let peer = getPeer(room, socket.id);
+        socket.broadcast.to(peer).emit('board-size-update', boardSet)
       })
       
       console.log("server connected");

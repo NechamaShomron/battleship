@@ -57,6 +57,11 @@ function unsetBoard(){
         setBoardSize(msg);
         setShowWelcome(false);
       }
+      else{
+        setBoardIsSet(false);
+        setBoardSize("");
+        setShowWelcome(true);
+      }
   });
 
   socket.emit("board-size-req", "");
