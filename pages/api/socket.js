@@ -10,38 +10,41 @@ const SocketHandler = (req, res) => {
     const io = new Server(res.socket.server)
     res.socket.server.io = io
 
-    let roomNum = 1;
+    let roomNumber = 1;
     let rooms = {};
 
     io.on('connection', (socket) => {
       console.log("server connected");
 
       rooms = io.sockets.adapter.rooms;
-      if (rooms.get(roomNum) && rooms.get(roomNum).size > 1) {
-        if (rooms.get(roomNum).size === 2) {
-          for (let i = 1; i <= roomNum; i++) {
+      if (rooms.get(roomNumber) && rooms.get(roomNumber).size > 1) {
+        if (rooms.get(roomNumber).size === 2) {
+          boardSet = '';
+          for (let i = 1; i <= roomNumber; i++) {
             //there is room in a room from start to end of rooms array
             if (rooms.get(i).size < 2) {
-              roomNum = i;
+              roomNumber = i;
               break;
               //there isn't room
             } else {
-              roomNum++;
+              roomNumber++;
               break;
             }
           }
         }
       }
-      socket.join(roomNum);
-      console.log(`player id: ${socket.id} is in room ${roomNum}`)
+      socket.join(roomNumber);
+      console.log(`player id: ${socket.id} is in room ${roomNumber}`)
 
-      socket.on('board-size-change', msg => {
-        socket.broadcast.to(roomNum).emit('board-size', msg)
-        boardSet = msg;
+      socket.emit('player-room-number', roomNumber);
+
+      //getting board size
+      socket.on('board-size-change', (boardsize, roomNumber) => {
+        socket.broadcast.to(roomNumber).emit('board-size', boardsize)
+        boardSet = boardsize;
+        socket.broadcast.emit("board-set", boardSet);
       })
-      socket.on('board-size-req', msg => {
-        socket.broadcast.emit('board-size-update', boardSet)
-      })
+      
       socket.on('disconnect', () => {
         console.log(`player ${socket.id} disconnected.`);
      });

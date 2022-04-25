@@ -9,9 +9,11 @@ export const WelcomeScreen = () => {
   const [showWelcome, setShowWelcome] = useState(true);
   const [userInput, setUserInput] = useState("");
   const [boardSize, setBoardSize] = useState("");
-  const [boardIsSet, setBoardIsSet] = useState(false);
   const socketContext = useContext(SocketContext);
   let socket = socketContext.client_socket;
+  const [playerRoomNum, setPlayerRoomNum] = useState();
+  const [playerBoardSize, setPlayerBoardSize] = useState();
+
 
   const onChangeHandler = (e) => {
     setUserInput(e.target.value);
@@ -24,25 +26,25 @@ export const WelcomeScreen = () => {
     } else {
       setBoardSize(userInput);
       if (socket) {
-        socket.emit("board-size-change", userInput);
+        socket.on('player-room-number', roomNumber => {
+          setPlayerRoomNum(roomNumber);
+          socket.emit("board-size-change", userInput, roomNumber);
+        })
       }
       setShowWelcome(false);
     }
   }
   if (socketContext.loading) {
-    return (<><p className="center">Loading ...</p></>);
+    return (<p className="center">Loading ...</p>);
   }
 
   else {
-    socket.on("board-size-update", msg => {
-      if (msg != "") {
-        setBoardIsSet(true);
-        setBoardSize(msg);
-        setShowWelcome(false);
-      }
-    });
-
-    socket.emit("board-size-req", "");
+    if(socket){
+      socket.on("board-set", size =>{
+        setShowWelcome(false)
+        setPlayerBoardSize(size)
+      })
+    }
     return (
       <>
         {showWelcome && (
@@ -55,7 +57,7 @@ export const WelcomeScreen = () => {
               fleet wins!
             </p>
             <div>
-              {!boardIsSet && <label>
+               <label>
                 Choose the board size:{" "}
                 <input
                   onChange={onChangeHandler}
@@ -65,7 +67,7 @@ export const WelcomeScreen = () => {
                   max={15}
                   placeholder="10-15"
                 />
-              </label>}
+              </label>
               <Button onClick={showBoardComponent} endIcon={<SendIcon />}>
                 Start
               </Button>
