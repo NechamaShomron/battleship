@@ -1,29 +1,33 @@
 import { useEffect, useState } from "react";
+import io from "socket.IO-client";
 import Head from "next/head";
-import io from "Socket.IO-client";
+import {SocketContext} from '../context/socketcontext';
 import { WelcomeScreen } from "../components/WelcomeScreen";
 
-let socket;
-
 const Home = () => {
-  useEffect(() => {
-    socketInitializer(), [];
-  });
+  const defaultSocketCtx = {
+    client_socket:{},
+    loading:true,
+  }
+  let socket;
+  const [socketContext,setSocketContext] = useState(defaultSocketCtx);
 
   const socketInitializer = async () => {
     await fetch("/api/socket");
     socket = io();
-
     socket.on("connect", () => {
       console.log("connected client");
+      setSocketContext({
+        client_socket:socket,
+        loading:false,
+      });
     });
-
-    socket.on("update-input", (msg) => {
-      setBoardSize(msg);
-    });
-    socket.emit("create", "room1");
   };
 
+  useEffect(() => {
+    socketInitializer();
+  },[]);
+  
   return (
     <>
       <Head>
@@ -31,7 +35,10 @@ const Home = () => {
         <meta name="description" content="battleship game" />
         <link rel="icon" href="/battleship.png" />
       </Head>
+      
+      <SocketContext.Provider value={socketContext}>
       <WelcomeScreen />
+      </SocketContext.Provider>
     </>
   );
 };

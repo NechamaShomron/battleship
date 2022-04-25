@@ -12,6 +12,8 @@ function Game(props) {
   const [rotation,setRotation] = useState("horizontal");
   const [availableShips, setAvailableShips] = useState(AVAILABLE_SHIPS);
   const [message, setMessage] = useState("");
+  const [boardIsSet, setBoardIsSet] =useState(props.boardIsSet);
+  
   
   const boardSize = +props.boardSize + 1;
   
