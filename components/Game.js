@@ -1,7 +1,8 @@
 import Board from "./Board";
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { AVAILABLE_SHIPS } from "./Ships";
 import { SocketContext } from '../context/socketcontext';
+
 
 function Game(props) {
   const [gameState, setGameState] = useState("game-init");
@@ -12,13 +13,22 @@ function Game(props) {
   });
   const [rotation, setRotation] = useState("horizontal");
   const [availableShips, setAvailableShips] = useState(AVAILABLE_SHIPS);
-  const [message, setMessage] = useState("");
-  const [players, setPlayers] = useState({playerId: "", board:null, score:0, subs:[] });
+  const [countShipsPlaced, setCountShipsPlaced] = useState(0);
+  let playerOne = { id: "", roomNumber: "" };
+  //  const [playerTwo, setPlayerTwo] = useState({ id: "", roomNumber: "" })
 
   const socketContext = useContext(SocketContext);
   let socket = socketContext.client_socket;
 
   const boardSize = +props.boardSize + 1;
+
+  socket.on('player', (playerId, playerRoom) => {
+    playerOne = {
+      id: playerId,
+      roomNumber: playerRoom
+    }
+    console.log(playerOne.id, playerOne.roomNumber)
+  })
 
   let startingBoard = [];
   for (let i = 0; i < boardSize; i++) {
@@ -45,6 +55,7 @@ function Game(props) {
       for (let k = 0; k < shipSelected.length; k++) {
         newUserBoard[(i * boardSize + m + k)] = "x";
       }
+      setCountShipsPlaced(countShipsPlaced + 1);
       setUserBoard(newUserBoard);
       setShipSelected({
         name: "",
@@ -66,6 +77,7 @@ function Game(props) {
       for (let k = 0; k < shipSelected.length; k++) {
         newUserBoard[((i + k) * boardSize + m)] = "x";
       }
+      setCountShipsPlaced(countShipsPlaced + 1);
       setUserBoard(newUserBoard);
       setShipSelected({
         name: "",
@@ -88,13 +100,11 @@ function Game(props) {
       else {
         placeVertical(i, j);
       }
-      if (availableShips.length == 0) {
+      if (countShipsPlaced == 4) {
         setGameState('ready')
       }
-      console.log(boardType)
     } else if (boardType == "enemyBoard") {
-      if (availableShips.length == 0) {
-
+      if (gameState == 'start-game') {
         checkHitOrMiss(i, j)
         console.log(i, j)
       }
@@ -128,11 +138,31 @@ function Game(props) {
     }
   }
   const playerReady = () => {
-      setGameState("waiting");
-    
-   
+    setGameState("waiting");
     //waiting for both users to be ready
+    // socket.emit('saving-player');
+    // socket.on('player', (playerId, roomNumber) => {
+    //   setPlayerOne({
+    //     id: playerId,
+    //     roomNumber: roomNumber
+    //   })
 
+    //   socket.on('players', (playerList) => {
+    //     const players = playerList.map(obj => ({ ...obj }));
+    //     //check if two players are ready
+    //     players.map(player => {
+    //       if (player.roomNumber == roomNumber && player.playerId !== playerId) {
+    //         setPlayerTwo({
+    //           id: player.playerId,
+    //           roomNumber: player.roomNumber
+    //         })
+    //         //found player two so he clicked ready
+    //         socket.emit()
+    //         setGameState("start-game");
+    //       }
+    //     })
+    //   })
+    // })
   }
   return (
     <>
@@ -142,10 +172,12 @@ function Game(props) {
       <div className="hold-boards">
         <div className="left-side">
           <h2>My board!</h2>
-          {gameState == 'game-init' && <><h3>Place your ships!
+          {gameState == 'game-init' && <><h3>Select ship and place on board!
             <button className="rotate-bttn ship" onClick={rotateShips}>Rotate ships</button></h3></>}
           {gameState == "ready" && <h3>Press when ready<button className="rotate-bttn ship" onClick={playerReady}>Ready</button></h3>}
-          {gameState == 'waiting' && <h3>Waiting for opponent</h3> }
+          {gameState == 'waiting' && <h3>Waiting for opponent</h3>}
+          {gameState == "start-game" && <h3>turns .. </h3>}
+          {/* complete turn logic */}
           <div className="flex-container">
             <Board
               onClick={(boardType, i, j) =>

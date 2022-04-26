@@ -1,6 +1,7 @@
 import { Server } from 'Socket.IO'
 
 let boardSet = "";
+let players = [];
 
 const SocketHandler = (req, res) => {
   if (res.socket.server.io) {
@@ -35,22 +36,22 @@ const SocketHandler = (req, res) => {
       }
       socket.join(roomNumber);
       console.log(`player id: ${socket.id} is in room ${roomNumber}`)
+      
+      //players array of objects holds all players
+      players.push({playerId: socket.id, roomNumber}); 
 
       //getting board size
-      socket.on('board-size-change', (boardsize) => {
-        socket.broadcast.to(roomNumber).emit('board-size', boardsize)
+      socket.on('board-size-update', (boardsize) => {
         boardSet = boardsize;
       })
+
       //setting board size for both users
       if (boardSet) {
         socket.emit('board-set', boardSet);
       }
 
-      //so we can play by player numbers
-      socket.emit('player-number', socket.id, roomNumber);
-
-
-
+      // give the socket id and player id to client
+      socket.emit('player', socket.id, roomNumber);
 
       socket.on('disconnect', () => {
         console.log(`player ${socket.id} disconnected.`);

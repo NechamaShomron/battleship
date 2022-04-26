@@ -23,7 +23,7 @@ export const WelcomeScreen = () => {
     } else {
       setBoardSize(userInput);
       if (socket) {
-       socket.emit("board-size-change", userInput);
+       socket.emit("board-size-update", userInput);
       }
       setShowWelcome(false);
     }
