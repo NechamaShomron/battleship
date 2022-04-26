@@ -1,8 +1,7 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import Button from "@mui/material/Button";
 import SendIcon from "@mui/icons-material/Send";
 import Game from "./Game";
-
 import { SocketContext } from '../context/socketcontext';
 
 export const WelcomeScreen = () => {
@@ -11,8 +10,6 @@ export const WelcomeScreen = () => {
   const [boardSize, setBoardSize] = useState("");
   const socketContext = useContext(SocketContext);
   let socket = socketContext.client_socket;
-  const [playerRoomNum, setPlayerRoomNum] = useState();
-  const [playerBoardSize, setPlayerBoardSize] = useState();
 
 
   const onChangeHandler = (e) => {
@@ -26,10 +23,7 @@ export const WelcomeScreen = () => {
     } else {
       setBoardSize(userInput);
       if (socket) {
-        socket.on('player-room-number', roomNumber => {
-          setPlayerRoomNum(roomNumber);
-          socket.emit("board-size-change", userInput, roomNumber);
-        })
+       socket.emit("board-size-change", userInput);
       }
       setShowWelcome(false);
     }
@@ -41,8 +35,8 @@ export const WelcomeScreen = () => {
   else {
     if(socket){
       socket.on("board-set", size =>{
+        setBoardSize(size)
         setShowWelcome(false)
-        setPlayerBoardSize(size)
       })
     }
     return (

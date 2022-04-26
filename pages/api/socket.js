@@ -12,13 +12,13 @@ const SocketHandler = (req, res) => {
 
     let roomNumber = 1;
     let rooms = {};
-
+    let room;
     io.on('connection', (socket) => {
       console.log("server connected");
-
       rooms = io.sockets.adapter.rooms;
-      if (rooms.get(roomNumber) && rooms.get(roomNumber).size > 1) {
-        if (rooms.get(roomNumber).size === 2) {
+      room = rooms.get(roomNumber);
+      if (room && room.size > 1) {
+        if (room.size === 2) {
           boardSet = '';
           for (let i = 1; i <= roomNumber; i++) {
             //there is room in a room from start to end of rooms array
@@ -36,22 +36,26 @@ const SocketHandler = (req, res) => {
       socket.join(roomNumber);
       console.log(`player id: ${socket.id} is in room ${roomNumber}`)
 
-      socket.emit('player-room-number', roomNumber);
-
       //getting board size
-      socket.on('board-size-change', (boardsize, roomNumber) => {
+      socket.on('board-size-change', (boardsize) => {
         socket.broadcast.to(roomNumber).emit('board-size', boardsize)
         boardSet = boardsize;
-        socket.broadcast.emit("board-set", boardSet);
       })
-      
+      //setting board size for both users
+      if (boardSet) {
+        socket.emit('board-set', boardSet);
+      }
+
+      //so we can play by player numbers
+      socket.emit('player-number', socket.id, roomNumber);
+
+
+
+
       socket.on('disconnect', () => {
         console.log(`player ${socket.id} disconnected.`);
-     });
-
+      });
     })
-
-   
   }
   res.end()
 }
