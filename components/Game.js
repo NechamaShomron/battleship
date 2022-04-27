@@ -14,21 +14,23 @@ function Game(props) {
   const [rotation, setRotation] = useState("horizontal");
   const [availableShips, setAvailableShips] = useState(AVAILABLE_SHIPS);
   const [countShipsPlaced, setCountShipsPlaced] = useState(0);
-  let playerOne = { id: "", roomNumber: "" };
-  //  const [playerTwo, setPlayerTwo] = useState({ id: "", roomNumber: "" })
+  const [status, setStatus] = useState("");
+  let player = { id: "", roomNumber: "", playerNumber: -1, turn:"" };
+  const [isTurn, setIsTurn] = useState(false)
 
   const socketContext = useContext(SocketContext);
   let socket = socketContext.client_socket;
 
   const boardSize = +props.boardSize + 1;
 
-  socket.on('player', (playerId, playerRoom) => {
-    playerOne = {
-      id: playerId,
-      roomNumber: playerRoom
-    }
-    console.log(playerOne.id, playerOne.roomNumber)
+  socket.emit("player-in-game");
+  socket.on('set-player', (playerId, playerRoom, playerNumber) => {
+    player.id = playerId;
+    player.roomNumber = playerRoom;
+    player.playerNumber = playerNumber;
   })
+
+
 
   let startingBoard = [];
   for (let i = 0; i < boardSize; i++) {
@@ -91,8 +93,20 @@ function Game(props) {
     let newEnemyBoard = enemyBoard.slice();
     newEnemyBoard[(i * boardSize + j)] = "x";
     setEnemyBoard(newEnemyBoard);
+    if(player.turn == true){
+      player.turn = false;
+      setIsTurn(prevValue => (
+        prevValue = !prevValue
+      ))
+    }else{
+      player.turn = true;
+      setIsTurn(prevValue => (
+        prevValue = !prevValue
+      ))
+    }
 
   }
+
   const handleClick = (boardType, i, j) => {
     if (boardType == "userBoard") {
       if (rotation == "horizontal")
@@ -105,8 +119,13 @@ function Game(props) {
       }
     } else if (boardType == "enemyBoard") {
       if (gameState == 'start-game') {
-        checkHitOrMiss(i, j)
-        console.log(i, j)
+        console.log("playerurn" +player.turn)
+
+        if(player.turn){
+          checkHitOrMiss(i, j)
+          console.log(i, j)
+        }
+        
       }
     }
   };
@@ -139,30 +158,22 @@ function Game(props) {
   }
   const playerReady = () => {
     setGameState("waiting");
-    //waiting for both users to be ready
-    // socket.emit('saving-player');
-    // socket.on('player', (playerId, roomNumber) => {
-    //   setPlayerOne({
-    //     id: playerId,
-    //     roomNumber: roomNumber
-    //   })
+    socket.emit("player-ready",player);
+    socket.on("both-players-ready", ()=>{
+      console.log(player)
+      //player 1 starts
+      if(player.playerNumber == 1){
+        player.turn = true;
+        setIsTurn(true);
+        console.log("wello")
+      }else{
+        player.turn = false;
+        setIsTurn(false);
+      }
+      setGameState('start-game');
+      console.log(player.turn)
+    })
 
-    //   socket.on('players', (playerList) => {
-    //     const players = playerList.map(obj => ({ ...obj }));
-    //     //check if two players are ready
-    //     players.map(player => {
-    //       if (player.roomNumber == roomNumber && player.playerId !== playerId) {
-    //         setPlayerTwo({
-    //           id: player.playerId,
-    //           roomNumber: player.roomNumber
-    //         })
-    //         //found player two so he clicked ready
-    //         socket.emit()
-    //         setGameState("start-game");
-    //       }
-    //     })
-    //   })
-    // })
   }
   return (
     <>
@@ -175,9 +186,8 @@ function Game(props) {
           {gameState == 'game-init' && <><h3>Select ship and place on board!
             <button className="rotate-bttn ship" onClick={rotateShips}>Rotate ships</button></h3></>}
           {gameState == "ready" && <h3>Press when ready<button className="rotate-bttn ship" onClick={playerReady}>Ready</button></h3>}
-          {gameState == 'waiting' && <h3>Waiting for opponent</h3>}
-          {gameState == "start-game" && <h3>turns .. </h3>}
-          {/* complete turn logic */}
+          {gameState == 'waiting' && <h3>Waiting for opponent ...</h3>}
+          {gameState == "start-game" && <h3>{isTurn ? 'your turn!' : 'opponents turn'}</h3>}
           <div className="flex-container">
             <Board
               onClick={(boardType, i, j) =>

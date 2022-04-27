@@ -14,6 +14,7 @@ const SocketHandler = (req, res) => {
     let roomNumber = 1;
     let rooms = {};
     let room;
+    let turn;
     io.on('connection', (socket) => {
       console.log("server connected");
       rooms = io.sockets.adapter.rooms;
@@ -35,10 +36,14 @@ const SocketHandler = (req, res) => {
         }
       }
       socket.join(roomNumber);
-      console.log(`player id: ${socket.id} is in room ${roomNumber}`)
-      
+
       //players array of objects holds all players
-      players.push({playerId: socket.id, roomNumber}); 
+      if (io.sockets.adapter.rooms.get(roomNumber).size == 1) {
+        players.push({ playerId: socket.id, roomNumber, ready: false, playerNumber: 1 });
+      }
+      else {
+        players.push({ playerId: socket.id, roomNumber, ready: false, playerNumber: 2 });
+      }
 
       //getting board size
       socket.on('board-size-update', (boardsize) => {
@@ -49,9 +54,29 @@ const SocketHandler = (req, res) => {
       if (boardSet) {
         socket.emit('board-set', boardSet);
       }
+      socket.on("player-in-game", () => {
+        // give the socket id and player id to client
+        let currentPlayer = players.find(player =>{
+          return player.playerId == socket.id;
+        })
+        socket.emit('set-player', currentPlayer.playerId, currentPlayer.roomNumber, currentPlayer.playerNumber);
+      })
 
-      // give the socket id and player id to client
-      socket.emit('player', socket.id, roomNumber);
+      socket.on('player-ready', player => {
+        let currPlayer = players.find((obj) => {
+          return obj.playerId == player.id;
+        })
+        currPlayer.ready = true;
+        let findOtherPlayerInRoom = players.find(obj => {
+          return obj.roomNumber == player.roomNumber && obj.playerId != player.id;
+        });
+        if (findOtherPlayerInRoom) {
+            if(findOtherPlayerInRoom.ready == true){
+            io.to(findOtherPlayerInRoom.roomNumber).emit("both-players-ready");
+            }
+        }
+
+      })
 
       socket.on('disconnect', () => {
         console.log(`player ${socket.id} disconnected.`);
