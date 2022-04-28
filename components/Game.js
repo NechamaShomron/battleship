@@ -3,6 +3,7 @@ import React, { useState, useContext, useEffect } from "react";
 import { AVAILABLE_SHIPS } from "./Ships";
 import { SocketContext } from '../context/socketcontext';
 
+let player = { id: "", roomNumber: "", playerNumber: -1, turn:false };
 
 function Game(props) {
   const [gameState, setGameState] = useState("game-init");
@@ -15,8 +16,7 @@ function Game(props) {
   const [availableShips, setAvailableShips] = useState(AVAILABLE_SHIPS);
   const [countShipsPlaced, setCountShipsPlaced] = useState(0);
   const [status, setStatus] = useState("");
-  let player = { id: "", roomNumber: "", playerNumber: -1, turn:"" };
-  const [isTurn, setIsTurn] = useState(false)
+  const [isPlayerOneTurn, setIsPlayerOneTurn] = useState(true)
 
   const socketContext = useContext(SocketContext);
   let socket = socketContext.client_socket;
@@ -90,22 +90,29 @@ function Game(props) {
   }
 
   function checkHitOrMiss(i, j) {
+    let previousTurn;
     let newEnemyBoard = enemyBoard.slice();
     newEnemyBoard[(i * boardSize + j)] = "x";
     setEnemyBoard(newEnemyBoard);
-    if(player.turn == true){
-      player.turn = false;
-      setIsTurn(prevValue => (
-        prevValue = !prevValue
-      ))
-    }else{
-      player.turn = true;
-      setIsTurn(prevValue => (
-        prevValue = !prevValue
-      ))
-    }
+
+    //exchange curr player turn 
+    previousTurn = player.turn;
+    player.turn = !previousTurn;
+
 
   }
+  socket.on("swap-turns", ()=>{
+  
+    //swap other user turn
+    let previousTurn;
+    previousTurn = player.turn;
+    player.turn = !previousTurn;
+          setIsPlayerOneTurn(prevVal => (
+            !prevVal
+    ))
+    console.log("other player: " + player.turn)
+    
+})
 
   const handleClick = (boardType, i, j) => {
     if (boardType == "userBoard") {
@@ -119,16 +126,18 @@ function Game(props) {
       }
     } else if (boardType == "enemyBoard") {
       if (gameState == 'start-game') {
-        console.log("playerurn" +player.turn)
+        console.log("player number: " + player.playerNumber + " playe turn: " +player.turn)
 
         if(player.turn){
           checkHitOrMiss(i, j)
           console.log(i, j)
-        }
+          socket.emit("exchange-turns", player);;
+
         
       }
     }
   };
+}
   const handleClickShip = (event) => {
     for (let i of availableShips) {
       if (i.name == event.target.name) {
@@ -164,14 +173,13 @@ function Game(props) {
       //player 1 starts
       if(player.playerNumber == 1){
         player.turn = true;
-        setIsTurn(true);
+        setIsPlayerOneTurn(true);
         console.log("wello")
       }else{
         player.turn = false;
-        setIsTurn(false);
+        setIsPlayerOneTurn(false);
       }
       setGameState('start-game');
-      console.log(player.turn)
     })
 
   }
@@ -187,7 +195,7 @@ function Game(props) {
             <button className="rotate-bttn ship" onClick={rotateShips}>Rotate ships</button></h3></>}
           {gameState == "ready" && <h3>Press when ready<button className="rotate-bttn ship" onClick={playerReady}>Ready</button></h3>}
           {gameState == 'waiting' && <h3>Waiting for opponent ...</h3>}
-          {gameState == "start-game" && <h3>{isTurn ? 'your turn!' : 'opponents turn'}</h3>}
+          {gameState == "start-game" && <h3>{isPlayerOneTurn ? 'your turn!' : 'opponents turn'}</h3>}
           <div className="flex-container">
             <Board
               onClick={(boardType, i, j) =>

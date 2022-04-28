@@ -75,7 +75,13 @@ const SocketHandler = (req, res) => {
             io.to(findOtherPlayerInRoom.roomNumber).emit("both-players-ready");
             }
         }
+      })
 
+      socket.on("exchange-turns", (currPlayerTurn) => {
+        let findOtherPlayerInRoom = players.find(obj => {
+          return obj.roomNumber == currPlayerTurn.roomNumber && obj.playerId != currPlayerTurn.id;
+        });
+          socket.to(findOtherPlayerInRoom.playerId).emit("swap-turns");
       })
 
       socket.on('disconnect', () => {
