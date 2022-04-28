@@ -3,7 +3,8 @@ import React, { useState, useContext, useEffect } from "react";
 import { AVAILABLE_SHIPS } from "./Ships";
 import { SocketContext } from '../context/socketcontext';
 
-let player = { id: "", roomNumber: "", playerNumber: -1, turn:false };
+let player = { id: "", roomNumber: "", playerNumber: -1, turn: false };
+let shipsCounter = 0;
 
 function Game(props) {
   const [gameState, setGameState] = useState("game-init");
@@ -14,9 +15,9 @@ function Game(props) {
   });
   const [rotation, setRotation] = useState("horizontal");
   const [availableShips, setAvailableShips] = useState(AVAILABLE_SHIPS);
-  const [countShipsPlaced, setCountShipsPlaced] = useState(0);
   const [status, setStatus] = useState("");
   const [isPlayerOneTurn, setIsPlayerOneTurn] = useState(true)
+  const shipsPlaced = [];
 
   const socketContext = useContext(SocketContext);
   let socket = socketContext.client_socket;
@@ -28,9 +29,7 @@ function Game(props) {
     player.id = playerId;
     player.roomNumber = playerRoom;
     player.playerNumber = playerNumber;
-  })
-
-
+  });
 
   let startingBoard = [];
   for (let i = 0; i < boardSize; i++) {
@@ -57,8 +56,15 @@ function Game(props) {
       for (let k = 0; k < shipSelected.length; k++) {
         newUserBoard[(i * boardSize + m + k)] = "x";
       }
-      setCountShipsPlaced(countShipsPlaced + 1);
+      //shipsPlaced.push({ship: })
       setUserBoard(newUserBoard);
+      setAvailableShips((prevValue) => (
+        prevValue.filter(ship => {
+          return ship.name != shipSelected.name;
+        })
+      ))
+      shipsCounter++;
+
       setShipSelected({
         name: "",
         value: "",
@@ -79,8 +85,13 @@ function Game(props) {
       for (let k = 0; k < shipSelected.length; k++) {
         newUserBoard[((i + k) * boardSize + m)] = "x";
       }
-      setCountShipsPlaced(countShipsPlaced + 1);
       setUserBoard(newUserBoard);
+      setAvailableShips((prevValue) => (
+        prevValue.filter(ship => {
+          return ship.name != shipSelected.name;
+        })
+      ))
+      shipsCounter++;
       setShipSelected({
         name: "",
         value: "",
@@ -94,50 +105,54 @@ function Game(props) {
     let newEnemyBoard = enemyBoard.slice();
     newEnemyBoard[(i * boardSize + j)] = "x";
     setEnemyBoard(newEnemyBoard);
-
-    //exchange curr player turn 
+    //swap turn
     previousTurn = player.turn;
     player.turn = !previousTurn;
-
-
-  }
-  socket.on("swap-turns", ()=>{
-  
-    //swap other user turn
-    let previousTurn;
-    previousTurn = player.turn;
-    player.turn = !previousTurn;
-          setIsPlayerOneTurn(prevVal => (
-            !prevVal
+    setIsPlayerOneTurn(prevVal => (
+      !prevVal
     ))
-    console.log("other player: " + player.turn)
-    
-})
+  }
+  useEffect(() => {
+    socket.on("swap-turns", () => {
+      //swap other user's turn
+      let previousTurn;
+      previousTurn = player.turn;
+      player.turn = !previousTurn;
+      setIsPlayerOneTurn(prevVal => (
+        !prevVal
+      ))
+    })
+  }, [])
+
 
   const handleClick = (boardType, i, j) => {
     if (boardType == "userBoard") {
-      if (rotation == "horizontal")
-        placeHorizontal(i, j);
-      else {
-        placeVertical(i, j);
+      if (shipSelected.name != "") {
+        if (rotation == "horizontal")
+          placeHorizontal(i, j);
+        else {
+          placeVertical(i, j);
+        }
       }
-      if (countShipsPlaced == 4) {
+      //all ships placed
+      if (shipsCounter == 5){
         setGameState('ready')
       }
     } else if (boardType == "enemyBoard") {
       if (gameState == 'start-game') {
-        console.log("player number: " + player.playerNumber + " playe turn: " +player.turn)
-
-        if(player.turn){
+        console.log("player number: " + player.playerNumber + " playe turn: " + player.turn)
+        if (player.turn) {
+          if (enemyBoard[(i * boardSize + j)] != '0') {
+            alert("square has already been hit!")
+            return;
+          }
           checkHitOrMiss(i, j)
           console.log(i, j)
           socket.emit("exchange-turns", player);;
-
-        
+        }
       }
-    }
-  };
-}
+    };
+  }
   const handleClickShip = (event) => {
     for (let i of availableShips) {
       if (i.name == event.target.name) {
@@ -150,11 +165,6 @@ function Game(props) {
         });
       }
     }
-    setAvailableShips((prevValue) => (
-      prevValue.filter(ship => {
-        return ship.name != event.target.name;
-      })
-    ))
     event.preventDefault();
   };
   const rotateShips = () => {
@@ -167,17 +177,15 @@ function Game(props) {
   }
   const playerReady = () => {
     setGameState("waiting");
-    socket.emit("player-ready",player);
-    socket.on("both-players-ready", ()=>{
-      console.log(player)
+    socket.emit("player-ready", player);
+    socket.on("both-players-ready", () => {
       //player 1 starts
-      if(player.playerNumber == 1){
+      if (player.playerNumber == 1) {
         player.turn = true;
         setIsPlayerOneTurn(true);
-        console.log("wello")
-      }else{
+      } else {
+        setIsPlayerOneTurn(true);
         player.turn = false;
-        setIsPlayerOneTurn(false);
       }
       setGameState('start-game');
     })
@@ -195,7 +203,9 @@ function Game(props) {
             <button className="rotate-bttn ship" onClick={rotateShips}>Rotate ships</button></h3></>}
           {gameState == "ready" && <h3>Press when ready<button className="rotate-bttn ship" onClick={playerReady}>Ready</button></h3>}
           {gameState == 'waiting' && <h3>Waiting for opponent ...</h3>}
-          {gameState == "start-game" && <h3>{isPlayerOneTurn ? 'your turn!' : 'opponents turn'}</h3>}
+          {gameState == "start-game" && player.playerNumber == 1 && <h3>{isPlayerOneTurn ? 'your turn!' : 'opponents turn'}</h3>}
+          {gameState == "start-game" && player.playerNumber == 2 && <h3>{!isPlayerOneTurn ? 'your turn!' : 'opponents turn'}</h3>}
+
           <div className="flex-container">
             <Board
               onClick={(boardType, i, j) =>

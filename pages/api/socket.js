@@ -1,3 +1,4 @@
+import { ContactsOutlined } from '@mui/icons-material';
 import { Server } from 'Socket.IO'
 
 let boardSet = "";
@@ -59,9 +60,10 @@ const SocketHandler = (req, res) => {
         let currentPlayer = players.find(player =>{
           return player.playerId == socket.id;
         })
+       
         socket.emit('set-player', currentPlayer.playerId, currentPlayer.roomNumber, currentPlayer.playerNumber);
       })
-
+      
       socket.on('player-ready', player => {
         let currPlayer = players.find((obj) => {
           return obj.playerId == player.id;
@@ -77,11 +79,11 @@ const SocketHandler = (req, res) => {
         }
       })
 
-      socket.on("exchange-turns", (currPlayerTurn) => {
-        let findOtherPlayerInRoom = players.find(obj => {
-          return obj.roomNumber == currPlayerTurn.roomNumber && obj.playerId != currPlayerTurn.id;
-        });
-          socket.to(findOtherPlayerInRoom.playerId).emit("swap-turns");
+      socket.on("exchange-turns", (currPlayer) => { 
+        players.map(player =>{
+        console.log(`player id: ${player.playerId} is in room ${player.roomNumber}`)
+      })
+          socket.to(currPlayer.roomNumber).emit("swap-turns");
       })
 
       socket.on('disconnect', () => {

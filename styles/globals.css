@@ -88,8 +88,13 @@ h2,h3{
 }
 
 .hit{
-background-color: red;
+background-color: rgb(111, 8, 8);
 }
 .miss{
   background-color: #313432;
+}
+.user-ship-hit{
+  background-color: rgb(111, 8, 8);
+  border-radius: 50%;
+
 }
