@@ -1,7 +1,7 @@
 html {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, orange 60%, cyan);
+  background: linear-gradient(135deg, cyan 10%, orange);
 }
 body {
   /* font: 14px "Century Gothic", Futura, sans-serif; */
@@ -19,21 +19,52 @@ main > h1 {
 main > button {
   size: 100px;
 }
+.heading-element{
+font-size: 48px;
+font-weight: 600;
+}
+
+.score{
+  float: right;
+  padding: 20px;
+}
 
 div {
   line-height: 1.6;
   font-size: large;
 }
-.flex-container {
-  width: 70%;
-  margin: 20px;
+h2,h3 {
+  margin: 0px 0px 0px 20px;
+}
+.view {
+  display: flex;
+}
+
+.left-side , .right-side{
+   margin: 0;
+   flex: 0 0 40%;  
+}
+.middle-side{
+  margin: 0;
+  flex: 0 0 20%;
+  text-align: center;
+}
+.ul{
+
+}
+.li{
+  decoration: none;
+}
+.board-container {
+   margin: 20px;
   display: flex;
   flex-wrap: wrap;
-  background-color: aliceblue;
+  background-color: rgb(255, 255, 255); 
 }
+
 .square-item {
   border: 1px solid black;
-  background: #ececec;
+  background: #ffffff;
   float: left;
   font-size: 12px;
   line-height: 20px;
@@ -46,55 +77,67 @@ div {
   flex: 1 1 10%;
 }
 
-.square-item-clicked {
-background-color: #4CAF50;
+.ship-placed {
+  background-color: rgb(22, 166, 166);
 }
-.ship{
-  background-color: #4CAF50; 
+
+.shipsAvailable {
+  display: flex;
+  padding-left: 0;
+ }
+
+.ship {
+  background-color: white;
+  color: rgb(22, 166, 166);
   border: none;
-  color: white;
-  padding: 5px 32px;
+  font-weight: bold;
+  margin: 0 0px 0 20px;
+  flex-wrap: wrap;
+  flex: 0 0 20%;
   text-align: center;
   text-decoration: none;
   display: inline-block;
   cursor: pointer;
-  font: 14px "Century Gothic", Futura, sans-serif;
+  font-family: "Bangers", cursive;
   border-radius: 5px;
 }
+
 .ship:hover {
-  background-color: #3e8e41;
+  background-color: rgb(21, 180, 180);
+  color: white;
 }
-.hold-boards {
-  display: flex;
-}
-h2,h3{
-  margin: 0px 0px 0px 20px;
-}
+
 .place-center {
   padding: 0px;
 }
-.shipsAvailable {
-  width: 12%;
-  float: left;
-  padding: 0px;
-  margin: -10px 0px 0px 20px;
+
+.ship-center {
+  padding: 5%;
 }
-.ship-center{
-  padding: 0%;
+.rotate-bttn {
+  border-radius: 50%;
+  padding: 3%;
+  margin-left: 40%;
+  margin-top: 10px;
 }
-.rotate-bttn{
-  border-radius: 5px;
-  margin-left: 50px;
+.top-bttn{
+  border-radius: 50%;
+  padding: 3%;
+  margin-top: 10px;
+
 }
 
-.hit{
-background-color: rgb(111, 8, 8);
+.hit {
+  background-color: rgb(111, 8, 8);
 }
-.miss{
+.miss {
   background-color: #313432;
 }
-.user-ship-hit{
-  background-color: rgb(111, 8, 8);
-  border-radius: 50%;
-
+.user-ship-hit {
+  background-color: rgb(22, 166, 166);
+  border-color: rgb(255, 213, 0);
+  border-style: dashed;
+  border-width: medium;
 }
+
+
