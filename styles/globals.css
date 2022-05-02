@@ -3,63 +3,73 @@ html {
   height: 100%;
   background: linear-gradient(135deg, cyan 10%, orange);
 }
+
 body {
   /* font: 14px "Century Gothic", Futura, sans-serif; */
   font-family: "Bangers", cursive;
 }
+
 .center {
   margin: auto;
   width: 30%;
   padding: 10px;
   text-align: center;
 }
-main > h1 {
+
+main>h1 {
   margin-top: 50%;
 }
-main > button {
+
+main>button {
   size: 100px;
 }
-.heading-element{
-font-size: 48px;
-font-weight: 600;
+
+.heading-element {
+  font-size: 35px;
+  font-weight: 600;
 }
 
-.score{
+.score {
   float: right;
-  padding: 20px;
+  margin: 20px 20px 0px 20px;
 }
 
 div {
   line-height: 1.6;
   font-size: large;
 }
-h2,h3 {
-  margin: 0px 0px 0px 20px;
+
+h2,
+h3 {
+  margin: -20px 0px 0px 20px;
 }
+
 .view {
   display: flex;
 }
 
-.left-side , .right-side{
-   margin: 0;
-   flex: 0 0 40%;  
+.left-side,
+.right-side {
+  margin: 0;
+  flex: 0 0 40%;
 }
-.middle-side{
+
+.middle-side {
   margin: 0;
   flex: 0 0 20%;
   text-align: center;
 }
-.ul{
-
+ol{
+  text-decoration: none;
 }
-.li{
-  decoration: none;
+.message{
+  color: rgb(168, 111, 5);
 }
 .board-container {
-   margin: 20px;
+  margin: 20px;
   display: flex;
   flex-wrap: wrap;
-  background-color: rgb(255, 255, 255); 
+  background-color: rgb(255, 255, 255);
 }
 
 .square-item {
@@ -84,7 +94,7 @@ h2,h3 {
 .shipsAvailable {
   display: flex;
   padding-left: 0;
- }
+}
 
 .ship {
   background-color: white;
@@ -107,20 +117,7 @@ h2,h3 {
   color: white;
 }
 
-.place-center {
-  padding: 0px;
-}
-
-.ship-center {
-  padding: 5%;
-}
-.rotate-bttn {
-  border-radius: 50%;
-  padding: 3%;
-  margin-left: 40%;
-  margin-top: 10px;
-}
-.top-bttn{
+.top-bttn {
   border-radius: 50%;
   padding: 3%;
   margin-top: 10px;
@@ -128,16 +125,17 @@ h2,h3 {
 }
 
 .hit {
-  background-color: rgb(111, 8, 8);
+  background-color: rgb(227, 12, 12);
 }
+
 .miss {
   background-color: #313432;
 }
+
 .user-ship-hit {
   background-color: rgb(22, 166, 166);
-  border-color: rgb(255, 213, 0);
-  border-style: dashed;
-  border-width: medium;
+  border-color: rgb(227, 12, 12);
+  border-width: thick;
+  border-radius: 5px;
+
 }
-
-

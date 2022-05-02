@@ -1,6 +1,6 @@
 import { Server } from "Socket.IO";
 
-let boardSet = "";
+let boardLength = "";
 let players = [];
 
 
@@ -15,15 +15,16 @@ const SocketHandler = (req, res) => {
     let roomNumber = 1;
     let rooms = {};
     let room;
+
     io.on("connection", (socket) => {
       console.log("server connected");
       rooms = io.sockets.adapter.rooms;
       room = rooms.get(roomNumber);
       if (room && room.size > 1) {
         if (room.size === 2) {
-          boardSet = "";
+          boardLength = "";
           for (let i = 1; i <= roomNumber; i++) {
-            //there is room in a room from start to end of rooms array
+            //there is room in a room (from start to end of rooms map)
             if (rooms.get(i) && rooms.get(i).size < 2) {
               roomNumber = i;
               break;
@@ -44,11 +45,10 @@ const SocketHandler = (req, res) => {
           roomNumber,
           ready: false,
           playerNumber: 1,
-          boardsize: boardSet,
+          boardsize: boardLength,
           playerOneBoard: [],
           playerOneShips: [],
           rematch: false
-
         });
       } else {
         players.push({
@@ -56,7 +56,7 @@ const SocketHandler = (req, res) => {
           roomNumber,
           ready: false,
           playerNumber: 2,
-          boardsize: boardSet,
+          boardsize: boardLength,
           playerTwoBoard: [],
           playerTwoShips: [],
           rematch: false
@@ -65,16 +65,16 @@ const SocketHandler = (req, res) => {
 
       //getting board size
       socket.on("board-size-update", (boardsize) => {
-        boardSet = boardsize;
+        boardLength = boardsize;
       });
 
       //setting board size for both users
-      if (boardSet) {
-        io.to(roomNumber).emit("board-set", boardSet);
+      if (boardLength) {
+        io.to(roomNumber).emit("board-set", boardLength);
       }
-      //setting player info
+
+      //giving player info to player client
       socket.on("player-in-game", () => {
-        // give the socket id and player id to client
         let currentPlayer = players.find((player) => {
           return player.playerId == socket.id;
         });
@@ -87,6 +87,7 @@ const SocketHandler = (req, res) => {
         );
       });
 
+      //func to add user board and ships
       function addBoardAndShips(userBoard, userShips, board, ships) {
         //add board
         for (let i = 0; i < board.length; i++) {
@@ -99,12 +100,11 @@ const SocketHandler = (req, res) => {
           userShips.push(ships[i]);
         }
       }
-      //set boards
+      //get player boards and ships and send to func to save them
       socket.on("player-board", (player, board, ships) => {
         let currPlayer = players.find(obj => {
           return obj.playerId == player.id;
         })
-        //player number 1
         if (currPlayer.playerNumber == 1) {
           addBoardAndShips(currPlayer.playerOneBoard, currPlayer.playerOneShips, board, ships);
         } else {
@@ -112,9 +112,10 @@ const SocketHandler = (req, res) => {
         }
       });
 
+      //function to check if user hit/missed a ship and to tell opponent accordingly
       function hitOrMiss(
         opponentBoard,
-        OpponentShips,
+        opponentShips,
         iCoord,
         jCoord,
         boardLength,
@@ -124,16 +125,16 @@ const SocketHandler = (req, res) => {
         //ship hit
         if (opponentBoard[iCoord * boardLength + jCoord] != 0) {
           value = opponentBoard[iCoord * boardLength + jCoord];
-          for (let i = 0; i < OpponentShips.length; i++) {
-            if (OpponentShips[i].value == value) {
+          for (let i = 0; i < opponentShips.length; i++) {
+            if (opponentShips[i].value == value) {
 
-              if (OpponentShips[i].length > 1) {
-                OpponentShips[i].length = OpponentShips[i].length - 1;
+              if (opponentShips[i].length > 1) {
+                opponentShips[i].length = opponentShips[i].length - 1;
               } else {
                 // sunk ship  
                 io.to(player.id).emit("sunk-ship");
-                OpponentShips.splice(i, 1);
-                if (OpponentShips.length == 0) {
+                opponentShips.splice(i, 1);
+                if (opponentShips.length == 0) {
                   io.to(player.roomNumber).emit("game-over", player.playerNumber);
                 }
               }
@@ -147,6 +148,7 @@ const SocketHandler = (req, res) => {
         }
       }
 
+      //get player and opponent and send to func to check hit/miss
       socket.on("check-hit", (iCoord, jCoord, boardLength, player) => {
         let currPlayer = players.find(obj => {
           return obj.playerId == player.id;
@@ -175,7 +177,7 @@ const SocketHandler = (req, res) => {
         }
       });
 
-      //set player ready to start game & check if other player ready too
+      //set player ready to start game & check if opponent ready too
       socket.on("player-ready", (player) => {
         let currPlayer = players.find((obj) => {
           return obj.playerId == player.id;
@@ -194,12 +196,13 @@ const SocketHandler = (req, res) => {
           }
         }
       });
+
       //swap turns
       socket.on("exchange-turns", (currPlayer) => {
         socket.to(currPlayer.roomNumber).emit("swap-turns");
       });
 
-      //rematch
+      //rematch, reset board,ships and ready value of player
       socket.on("rematch", player => {
         let currPlayer = players.find(obj => {
           return obj.playerId == player.id;
@@ -219,6 +222,7 @@ const SocketHandler = (req, res) => {
             obj.roomNumber == player.roomNumber && obj.playerId != player.id
           );
         });
+        //check if other player also wants a rematch
         if (otherPlayerInRoom) {
           if (otherPlayerInRoom.rematch == true) {
             otherPlayerInRoom.ready = false;
@@ -234,7 +238,7 @@ const SocketHandler = (req, res) => {
         }
       })
 
-      //disconnect - and tell player that remains that other player disconnected
+      //disconnect - and tell opponent about the disconnection
       socket.on("disconnect", () => {
         let currentPlayer = players.find((player) => {
           return player.playerId == socket.id;
