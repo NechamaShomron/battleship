@@ -243,8 +243,9 @@ const SocketHandler = (req, res) => {
         let currentPlayer = players.find((player) => {
           return player.playerId == socket.id;
         });
-        socket.leave(room);
-        players.filter((player) => {
+        currentPlayer.ready= false;  
+        socket.leave(roomNumber);
+        players = players.filter((player) => {
           return player.playerId != currentPlayer.playerId;
         });
         socket.to(currentPlayer.roomNumber).emit("other-player-disconnected");

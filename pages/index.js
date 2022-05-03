@@ -15,7 +15,7 @@ const Home = () => {
   const socketInitializer = async () => {
     await fetch("/api/socket");
     socket = io();
-    socket.on("connect", () => {
+    socket.once("connect", () => {
       console.log("connected client");
       setSocketContext({
         client_socket:socket,

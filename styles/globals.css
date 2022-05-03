@@ -60,9 +60,15 @@ h3 {
   text-align: center;
 }
 ol{
-  text-decoration: none;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  justify-content: start;
 }
 .message{
+  font-size: 30px;
   color: rgb(168, 111, 5);
 }
 .board-container {

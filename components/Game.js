@@ -7,6 +7,10 @@ let player = { id: "", roomNumber: "", playerNumber: -1, turn: false, score: 0 }
 let shipsCounter = 0;
 let placedShipValue = "A";
 let shipLengthAndVal = [];
+let opponentBoardHistory = [];
+let stepCounter = 0;
+
+
 
 function Game(props) {
   const [gameState, setGameState] = useState("game-init");
@@ -20,11 +24,11 @@ function Game(props) {
   const [isWinner, setIsWinner] = useState();
   const [isPlayerOneTurn, setIsPlayerOneTurn] = useState(true);
   const [stepNum, setStepNum] = useState(0);
-
   const socketContext = useContext(SocketContext);
   let socket = socketContext.client_socket;
 
   const boardSize = +props.boardSize + 1;
+
 
   //save connected player
   socket.emit("player-in-game");
@@ -43,10 +47,9 @@ function Game(props) {
   }
   //boards maintains the state of all squares
   const [userBoard, setUserBoard] = useState(startingBoard);
-  const [opponentBoard, setOpponentBoard] = useState({ board: startingBoard, stepNumber: stepNum });
+  const [opponentBoard, setOpponentBoard] = useState(startingBoard);
 
-  //currentBoard
-  const currentOpponentBoard = opponentBoard.board.slice();
+  opponentBoardHistory[0] = startingBoard;
 
   //place ship horizontal
   const placeHorizontal = (i, j) => {
@@ -118,35 +121,24 @@ function Game(props) {
   //check if user hit or missed opponent's ships
   const checkHitOrMiss = (i, j) => {
     socket.emit("check-hit", i, j, boardSize, player);
-
-//push new board with increased step number
-
     //if hit : h, if miss: m
     socket.off("missed-ship").on("missed-ship", () => {
-      let newOpponentBoard = opponentBoard.board.slice();
+      let newOpponentBoard = opponentBoard.slice();
       newOpponentBoard[i * boardSize + j] = "m"; //miss
-      setOpponentBoard(prevVal => (
-        {
-          ...prevVal,
-          board: newOpponentBoard,
-          stepNumber: stepNum
-        }
-      ));
-
-      currentOpponentBoard = newOpponentBoard;
+      setOpponentBoard(newOpponentBoard);
+      opponentBoardHistory[opponentBoardHistory.length] = newOpponentBoard;
+      stepCounter++;
+      setStepNum(stepCounter)
     })
     socket.off("hit-ship").on("hit-ship", () => {
-      let newOpponentBoard = opponentBoard.board.slice();
+      let newOpponentBoard = opponentBoard.slice();
       newOpponentBoard[i * boardSize + j] = "h"; //hit
-      setOpponentBoard(prevVal => (
-        {
-          ...prevVal,
-          board: newOpponentBoard,
-          stepNumber: stepNum
-        }
-      ));
-      currentOpponentBoard = newOpponentBoard;
+      setOpponentBoard(newOpponentBoard);
+      opponentBoardHistory[opponentBoardHistory.length] = newOpponentBoard;
+      stepCounter++;
+      setStepNum(stepCounter)
     });
+
 
     //sunk ship
     socket.off("sunk-ship").on("sunk-ship", () => {
@@ -172,7 +164,7 @@ function Game(props) {
 
     //on disconnection - let other player know.
     socket.once("other-player-disconnected", () => {
-      alert("Your opponent has disconnected.\nRe-enter game to play again.");
+      alert("Your opponent has disconnected.\nRefresh game to play again.");
     });
 
     //game over
@@ -214,23 +206,26 @@ function Game(props) {
       //board clicked is opponent's
     } else if (boardType == "opponentBoard") {
       if (gameState == "start-game") {
-        console.log(
-          "player number: " +
-          player.playerNumber +
-          " playe turn: " +
-          player.turn
-        );
+        //so nothing happens when you press on a board thats not the current one
         if (player.turn) {
-          //use case - user clickes a square that he already clicked
-          if (opponentBoard.board[i * boardSize + j] != "0") {
-            alert("square has already been hit!");
-            return;
+          //make sure user is in current board in order to try hit opponent
+          if (stepNum == opponentBoardHistory.length - 1) {
+
+            //use case - user clickes a square that he already clicked
+            if (opponentBoard[i * boardSize + j] != "0") {
+              alert("square has already been hit!");
+              return;
+            }
+            checkHitOrMiss(i, j);
+            //exchange turns between user and opponent
+            socket.emit("exchange-turns", player);
+            //user is in different board
+
+          } else {
+            alert("Please return to current step\n in order to continue playing")
           }
-          setStepNum(stepNum++);
-          checkHitOrMiss(i, j);
-          console.log(i, j);
-          //exchange turns between user and opponent
-          socket.emit("exchange-turns", player);
+        }else{
+          alert("Wait for your turn")
         }
       }
     }
@@ -288,21 +283,20 @@ function Game(props) {
 
   //jump to earlier move
   const jumpTo = (step) => {
-    setStepNumber(step);
-    setIsPlayerOneTurn((step % 2) === 0);
+    stepCounter = step;
+    setStepNum(stepCounter)
   };
 
-  const moves = opponentBoard.board.map((step, move) => {
+  const moves = opponentBoardHistory.map((step, move) => {
     const desc = move ?
-      `Go to move #${move}` :
-      'Go to game start';
+      `Show move #${move}` :
+      'Show game start';
     return (
       <li key={move}>
         <button onClick={() => jumpTo(move)}>{desc}</button>
       </li>
     );
   });
-
 
 
   //use case- rematch case, reset all values except score 
@@ -314,12 +308,11 @@ function Game(props) {
       placedShipValue = "A";
       shipLengthAndVal = [];
       setUserBoard(startingBoard);
-      setOpponentBoard(
-        {
-          board: startingBoard,
-          stepNumber: stepNum
-        }
-      );
+      setOpponentBoard(startingBoard);
+      opponentBoardHistory = [];
+      opponentBoardHistory[0] = startingBoard;
+      setStepNum(0);
+      stepCounter = 0;
       setGameState("game-init");
       setRotation("horizontal");
       setAvailableShips(AVAILABLE_SHIPS);
@@ -400,12 +393,13 @@ function Game(props) {
             <h3 className="message">{!isPlayerOneTurn ? "your turn!" : "opponents turn"}</h3>
           )}
           <br />
-          <h3>
+          {gameState == "start-game" && <><h3>
             History</h3>
-          <ol>
-            {moves}
-          </ol>
-
+            <ol>
+              {moves}
+            </ol>
+          </>
+          }
         </div>
 
         <div className="right-side">
@@ -415,7 +409,7 @@ function Game(props) {
               onClick={(boardType, i, j) => handleClick(boardType, i, j)}
               gameState={gameState}
               boardSize={boardSize}
-              boardState={opponentBoard.board}
+              boardState={opponentBoardHistory[stepNum]}
               boardType={"opponentBoard"}
             />
           </div>
