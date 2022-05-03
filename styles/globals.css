@@ -59,13 +59,16 @@ h3 {
   flex: 0 0 20%;
   text-align: center;
 }
+.history{
+  margin-top: 10px;
+}
 ol{
   list-style-type: none;
-  margin: 0;
+  margin: 15px 0 0 0 ;
   padding: 0;
-  display: grid;
-  grid-template-columns: repeat(2, auto);
-  justify-content: start;
+  overflow-y:auto;
+  max-height: 184px;
+
 }
 .message{
   font-size: 30px;

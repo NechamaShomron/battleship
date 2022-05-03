@@ -290,7 +290,7 @@ function Game(props) {
   const moves = opponentBoardHistory.map((step, move) => {
     const desc = move ?
       `Show move #${move}` :
-      'Show game start';
+      'Show start #0';
     return (
       <li key={move}>
         <button onClick={() => jumpTo(move)}>{desc}</button>
@@ -393,7 +393,7 @@ function Game(props) {
             <h3 className="message">{!isPlayerOneTurn ? "your turn!" : "opponents turn"}</h3>
           )}
           <br />
-          {gameState == "start-game" && <><h3>
+          {gameState == "start-game" && <><h3 className="history">
             History</h3>
             <ol>
               {moves}
