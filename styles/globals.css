@@ -59,16 +59,23 @@ h3 {
 }
 .moves {
   margin-top: 0;
-  max-height: 250px;
-  overflow-x: hidden;
   overflow-y: auto;
-  transform: rotate(180deg);
+}
+.scroll-wrapper {
+  margin-top: 10px;
+  overflow-y: auto;
+  max-height: 260px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.scroll-start-at-top {
+  flex: 1 1 0%;
 }
 ol {
   margin-top: 0;
   list-style-type: none;
-  overflow: hidden;
-  transform: rotate(180deg);
   text-align: center;
 }
 
@@ -76,8 +83,9 @@ ol {
   background-color: rgb(114, 113, 113);
   color: #f8f8ff;
   border-radius: 7%;
-  padding: 6%;
-  margin-top: 15px;
+  padding-top: 6%;
+  padding-bottom: 6%;
+  margin-top: 10px;
   border: none;
   font-family: "Bangers", cursive;
   font-size: 15px;
@@ -143,6 +151,11 @@ ol {
 }
 
 .ship:hover {
+  background-color: rgb(21, 180, 180);
+  color: white;
+}
+
+.ship:focus {
   background-color: rgb(21, 180, 180);
   color: white;
 }
