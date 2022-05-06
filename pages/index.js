@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import io from "socket.IO-client";
+import io from "socket.io-client";
 import Head from "next/head";
 import { SocketContext } from "../context/socketcontext";
 import { WelcomeScreen } from "../components/WelcomeScreen";
