@@ -3,7 +3,6 @@ import { Server } from "Socket.IO";
 let boardLength = "";
 let players = [];
 
-
 const SocketHandler = (req, res) => {
   if (res.socket.server.io) {
     console.log("Socket is already running");
@@ -48,7 +47,8 @@ const SocketHandler = (req, res) => {
           boardsize: boardLength,
           playerOneBoard: [],
           playerOneShips: [],
-          rematch: false
+          rematch: false,
+          score: 0,
         });
       } else {
         players.push({
@@ -59,7 +59,8 @@ const SocketHandler = (req, res) => {
           boardsize: boardLength,
           playerTwoBoard: [],
           playerTwoShips: [],
-          rematch: false
+          rematch: false,
+          score: 0,
         });
       }
 
@@ -79,13 +80,33 @@ const SocketHandler = (req, res) => {
           return player.playerId == socket.id;
         });
 
-        socket.emit(
+        io.to(currentPlayer.playerId).emit(
           "set-player",
           currentPlayer.playerId,
           currentPlayer.roomNumber,
-          currentPlayer.playerNumber
+          currentPlayer.playerNumber,
+          currentPlayer.score
         );
       });
+
+      //emit scores
+      if (io.sockets.adapter.rooms.get(roomNumber).size == 2) {
+        let currPlayer = players.find((obj) => {
+          return obj.roomNumber == roomNumber && obj.playerId == socket.id;
+        });
+        let opponentPlayer = players.find((obj) => {
+          return (
+            obj.roomNumber == currPlayer.roomNumber &&
+            obj.playerId != currPlayer.playerId
+          );
+        });
+        io.to(currPlayer.roomNumber).emit(
+          "set-score",
+          currPlayer.playerNumber,
+          currPlayer.score,
+          opponentPlayer.score
+        );
+      }
 
       //func to add user board and ships
       function addBoardAndShips(userBoard, userShips, board, ships) {
@@ -102,13 +123,23 @@ const SocketHandler = (req, res) => {
       }
       //get player boards and ships and send to func to save them
       socket.on("player-board", (player, board, ships) => {
-        let currPlayer = players.find(obj => {
+        let currPlayer = players.find((obj) => {
           return obj.playerId == player.id;
-        })
+        });
         if (currPlayer.playerNumber == 1) {
-          addBoardAndShips(currPlayer.playerOneBoard, currPlayer.playerOneShips, board, ships);
+          addBoardAndShips(
+            currPlayer.playerOneBoard,
+            currPlayer.playerOneShips,
+            board,
+            ships
+          );
         } else {
-          addBoardAndShips(currPlayer.playerTwoBoard, currPlayer.playerTwoShips, board, ships);
+          addBoardAndShips(
+            currPlayer.playerTwoBoard,
+            currPlayer.playerTwoShips,
+            board,
+            ships
+          );
         }
       });
 
@@ -127,19 +158,35 @@ const SocketHandler = (req, res) => {
           value = opponentBoard[iCoord * boardLength + jCoord];
           for (let i = 0; i < opponentShips.length; i++) {
             if (opponentShips[i].value == value) {
-
               if (opponentShips[i].length > 1) {
                 opponentShips[i].length = opponentShips[i].length - 1;
               } else {
-                // sunk ship  
+                // sunk ship
                 io.to(player.id).emit("sunk-ship");
                 opponentShips.splice(i, 1);
                 if (opponentShips.length == 0) {
-                  io.to(player.roomNumber).emit("game-over", player.playerNumber);
+                  let opponentPlayer = players.find((obj) => {
+                    return (
+                      obj.roomNumber == player.roomNumber &&
+                      obj.playerId != player.id
+                    );
+                  });
+                  let currPlayer = players.find((obj) => {
+                    return obj.playerId == player.id;
+                  });
+                  currPlayer.score++;
+                  io.to(player.roomNumber).emit(
+                    "game-over",
+                    currPlayer.playerNumber,
+                    currPlayer.score,
+                    opponentPlayer.score
+                  );
                 }
               }
               io.to(player.id).emit("hit-ship");
-              socket.to(player.roomNumber).emit("user-ship-hit", iCoord, jCoord);
+              socket
+                .to(player.roomNumber)
+                .emit("user-ship-hit", iCoord, jCoord);
             }
           }
         } else {
@@ -150,11 +197,13 @@ const SocketHandler = (req, res) => {
 
       //get player and opponent and send to func to check hit/miss
       socket.on("check-hit", (iCoord, jCoord, boardLength, player) => {
-        let currPlayer = players.find(obj => {
+        let currPlayer = players.find((obj) => {
           return obj.playerId == player.id;
         });
-        let opponentPlayer = players.find(obj => {
-          return obj.roomNumber == player.roomNumber && obj.playerId != player.id;
+        let opponentPlayer = players.find((obj) => {
+          return (
+            obj.roomNumber == player.roomNumber && obj.playerId != player.id
+          );
         });
         if (currPlayer.playerNumber == 1) {
           hitOrMiss(
@@ -184,15 +233,15 @@ const SocketHandler = (req, res) => {
         });
         currPlayer.ready = true;
         currPlayer.rematch = false;
-        let findOtherPlayerInRoom = players.find((obj) => {
+        let otherPlayerInRoom = players.find((obj) => {
           return (
             obj.roomNumber == player.roomNumber && obj.playerId != player.id
           );
         });
-        if (findOtherPlayerInRoom) {
-          if (findOtherPlayerInRoom.ready == true) {
-            findOtherPlayerInRoom.rematch = false;
-            io.to(findOtherPlayerInRoom.roomNumber).emit("both-players-ready");
+        if (otherPlayerInRoom) {
+          if (otherPlayerInRoom.ready == true) {
+            otherPlayerInRoom.rematch = false;
+            io.to(otherPlayerInRoom.roomNumber).emit("both-players-ready");
           }
         }
       });
@@ -203,10 +252,10 @@ const SocketHandler = (req, res) => {
       });
 
       //rematch, reset board,ships and ready value of player
-      socket.on("rematch", player => {
-        let currPlayer = players.find(obj => {
+      socket.on("rematch", (player) => {
+        let currPlayer = players.find((obj) => {
           return obj.playerId == player.id;
-        })
+        });
         currPlayer.rematch = true;
         currPlayer.ready = false;
         if (currPlayer.playerNumber == 1) {
@@ -229,21 +278,21 @@ const SocketHandler = (req, res) => {
             if (otherPlayerInRoom.playerNumber == 1) {
               otherPlayerInRoom.playerOneBoard = [];
               otherPlayerInRoom.playerOneShips = [];
-            }else{
+            } else {
               otherPlayerInRoom.playerTwoBoard = [];
               otherPlayerInRoom.playerTwoShips = [];
             }
             io.to(otherPlayerInRoom.roomNumber).emit("both-players-rematch");
           }
         }
-      })
+      });
 
       //disconnect - and tell opponent about the disconnection
       socket.on("disconnect", () => {
         let currentPlayer = players.find((player) => {
           return player.playerId == socket.id;
         });
-        currentPlayer.ready= false;  
+        currentPlayer.ready = false;
         socket.leave(roomNumber);
         players = players.filter((player) => {
           return player.playerId != currentPlayer.playerId;
