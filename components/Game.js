@@ -419,18 +419,22 @@ function Game(props) {
         <div className="middle-side">
           {gameState == "start-game" && player.playerNumber == 1 && (
             <div className="message">
-              {isPlayerOneTurn ? "your turn! 😀" : "opponent's turn"}
+              {isPlayerOneTurn ? "It's your turn! 😀" : "opponent's turn ..."}
             </div>
           )}
           {gameState == "start-game" && player.playerNumber == 2 && (
             <div className="message">
-              {!isPlayerOneTurn ? "your turn! 😀" : "opponent's turn"}
+              {!isPlayerOneTurn ? "It's your turn! 😀" : "opponent's turn ..."}
             </div>
           )}
           <br />
           {gameState == "start-game" && (
-            <div className="moves">
-              <ol>{moves}</ol>
+            <div className="scroll-wrapper">
+              <div className="scroll-start-at-top">
+                <div className="moves">
+                  <ol>{moves}</ol>
+                </div>
+              </div>
             </div>
           )}
         </div>
