@@ -126,7 +126,7 @@ ol {
 }
 
 .ship-placed {
-  background-color: cyan;
+  background-color: rgb(8, 146, 146);
 }
 
 .shipsAvailable {
@@ -136,7 +136,7 @@ ol {
 
 .ship {
   background-color: white;
-  color: cyan;
+  color: rgb(8, 146, 146);
   border: none;
   font-weight: bold;
   margin: 0 0px 0 20px;
@@ -151,12 +151,12 @@ ol {
 }
 
 .ship:hover {
-  background-color: rgb(21, 180, 180);
+  background-color: rgb(10, 90, 90);
   color: white;
 }
 
 .ship:focus {
-  background-color: rgb(21, 180, 180);
+  background-color: rgb(10, 90, 90);
   color: white;
 }
 
