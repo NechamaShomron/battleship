@@ -1,4 +1,4 @@
-import { Server } from "Socket.io";
+import { Server } from "socket.io";
 
 let boardLength = "";
 let players = [];
