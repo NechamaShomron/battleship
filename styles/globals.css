@@ -1,7 +1,7 @@
 html {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, cyan 10%, orange);
+  background: linear-gradient(135deg, #87cefa 40%, cyan);
 }
 
 body {
@@ -16,11 +16,11 @@ body {
   text-align: center;
 }
 
-main>h1 {
+main > h1 {
   margin-top: 50%;
 }
 
-main>button {
+main > button {
   size: 100px;
 }
 
@@ -32,11 +32,6 @@ main>button {
 .score {
   float: right;
   margin: 20px 20px 0px 20px;
-}
-
-div {
-  line-height: 1.6;
-  font-size: large;
 }
 
 h2,
@@ -59,26 +54,52 @@ h3 {
   flex: 0 0 20%;
   text-align: center;
 }
-.history{
+.history {
   margin-top: 10px;
 }
-ol{
-  list-style-type: none;
-  margin: 15px 0 0 0 ;
-  padding: 0;
-  overflow-y:auto;
-  max-height: 184px;
-
+.moves {
+  margin-top: 0;
+  max-height: 250px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  transform: rotate(180deg);
 }
-.message{
-  font-size: 30px;
-  color: rgb(168, 111, 5);
+ol {
+  margin-top: 0;
+  list-style-type: none;
+  overflow: hidden;
+  transform: rotate(180deg);
+  text-align: center;
+}
+
+.move-bttn {
+  background-color: rgb(114, 113, 113);
+  color: #f8f8ff;
+  border-radius: 7%;
+  padding: 6%;
+  margin-top: 15px;
+  border: none;
+  font-family: "Bangers", cursive;
+  font-size: 15px;
+  margin-left: -50px;
+  cursor: pointer;
+}
+.move-bttn:hover {
+  color: rgb(114, 113, 113);
+  background-color: #f8f8ff;
+}
+
+.message {
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-bottom: -10px;
+  text-align: center;
 }
 .board-container {
   margin: 20px;
   display: flex;
   flex-wrap: wrap;
-  background-color: rgb(255, 255, 255);
+  background-color: #f8f8ff;
 }
 
 .square-item {
@@ -97,7 +118,7 @@ ol{
 }
 
 .ship-placed {
-  background-color: rgb(22, 166, 166);
+  background-color: cyan;
 }
 
 .shipsAvailable {
@@ -107,7 +128,7 @@ ol{
 
 .ship {
   background-color: white;
-  color: rgb(22, 166, 166);
+  color: cyan;
   border: none;
   font-weight: bold;
   margin: 0 0px 0 20px;
@@ -130,11 +151,11 @@ ol{
   border-radius: 50%;
   padding: 3%;
   margin-top: 10px;
-
+  font-family: "Bangers", cursive;
 }
 
 .hit {
-  background-color: rgb(227, 12, 12);
+  background: linear-gradient(135deg, red, rgb(255, 102, 0));
 }
 
 .miss {
@@ -142,9 +163,6 @@ ol{
 }
 
 .user-ship-hit {
-  background-color: rgb(22, 166, 166);
-  border-color: rgb(227, 12, 12);
-  border-width: thick;
+  background: linear-gradient(135deg, red, rgb(255, 102, 0));
   border-radius: 5px;
-
 }
