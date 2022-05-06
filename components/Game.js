@@ -3,14 +3,18 @@ import React, { useState, useContext, useEffect } from "react";
 import { AVAILABLE_SHIPS } from "./Ships";
 import { SocketContext } from "../context/socketcontext";
 
-let player = { id: "", roomNumber: "", playerNumber: -1, turn: false, score: 0 };
+let player = {
+  id: "",
+  roomNumber: "",
+  playerNumber: -1,
+  turn: false,
+  score: 0,
+};
 let shipsCounter = 0;
 let placedShipValue = "A";
 let shipLengthAndVal = [];
 let opponentBoardHistory = [];
 let stepCounter = 0;
-
-
 
 function Game(props) {
   const [gameState, setGameState] = useState("game-init");
@@ -24,18 +28,19 @@ function Game(props) {
   const [isWinner, setIsWinner] = useState();
   const [isPlayerOneTurn, setIsPlayerOneTurn] = useState(true);
   const [stepNum, setStepNum] = useState(0);
+  const [opponentScore, setOpponentScore] = useState(0);
   const socketContext = useContext(SocketContext);
   let socket = socketContext.client_socket;
 
   const boardSize = +props.boardSize + 1;
 
-
   //save connected player
   socket.emit("player-in-game");
-  socket.on("set-player", (playerId, playerRoom, playerNumber) => {
+  socket.on("set-player", (playerId, playerRoom, playerNumber, playerScore) => {
     player.id = playerId;
     player.roomNumber = playerRoom;
     player.playerNumber = playerNumber;
+    player.score = playerScore;
   });
 
   //starting board
@@ -72,7 +77,10 @@ function Game(props) {
         })
       );
       shipsCounter++;
-      shipLengthAndVal.push({ value: placedShipValue, length: shipSelected.length });
+      shipLengthAndVal.push({
+        value: placedShipValue,
+        length: shipSelected.length,
+      });
 
       setShipSelected({
         name: "",
@@ -80,7 +88,7 @@ function Game(props) {
         length: "",
       });
     }
-  }
+  };
 
   //place ship vertical
   const placeVertical = (i, j) => {
@@ -96,7 +104,10 @@ function Game(props) {
       for (let k = 0; k < shipSelected.length; k++) {
         newUserBoard[(i + k) * boardSize + m] = placedShipValue;
       }
-      shipLengthAndVal.push({ value: placedShipValue, length: shipSelected.length });
+      shipLengthAndVal.push({
+        value: placedShipValue,
+        length: shipSelected.length,
+      });
       setUserBoard(newUserBoard);
       setAvailableShips((prevValue) =>
         prevValue.filter((ship) => {
@@ -110,13 +121,13 @@ function Game(props) {
         length: "",
       });
     }
-  }
+  };
   //listener to user ship hit
   socket.off("user-ship-hit").on("user-ship-hit", (iCoord, jCoord) => {
     let newUserBoard = userBoard.slice();
     newUserBoard[iCoord * boardSize + jCoord] = "z"; //hit
     setUserBoard(newUserBoard);
-  })
+  });
 
   //check if user hit or missed opponent's ships
   const checkHitOrMiss = (i, j) => {
@@ -128,31 +139,41 @@ function Game(props) {
       setOpponentBoard(newOpponentBoard);
       opponentBoardHistory[opponentBoardHistory.length] = newOpponentBoard;
       stepCounter++;
-      setStepNum(stepCounter)
-    })
+      setStepNum(stepCounter);
+    });
     socket.off("hit-ship").on("hit-ship", () => {
       let newOpponentBoard = opponentBoard.slice();
       newOpponentBoard[i * boardSize + j] = "h"; //hit
       setOpponentBoard(newOpponentBoard);
       opponentBoardHistory[opponentBoardHistory.length] = newOpponentBoard;
       stepCounter++;
-      setStepNum(stepCounter)
+      setStepNum(stepCounter);
     });
-
 
     //sunk ship
     socket.off("sunk-ship").on("sunk-ship", () => {
       alert("Congrats! You have sunk an enemy ship! 🎉");
-    })
+    });
 
     //swap user's turn
     let previousTurn;
     previousTurn = player.turn;
     player.turn = !previousTurn;
     setIsPlayerOneTurn((prevVal) => !prevVal);
-  }
+  };
 
   useEffect(() => {
+    //setting score
+    socket.on("set-score", (playerNumber, playerScore, enemyScore) => {
+      if (player.playerNumber == playerNumber) {
+        player.score = playerScore;
+        setOpponentScore(enemyScore);
+      } else {
+        player.score = enemyScore;
+        setOpponentScore(playerScore);
+      }
+    });
+
     //swap opponent's turn
     socket.on("swap-turns", () => {
       let previousTurn;
@@ -161,25 +182,27 @@ function Game(props) {
       setIsPlayerOneTurn((prevVal) => !prevVal);
     });
 
-
     //on disconnection - let other player know.
     socket.once("other-player-disconnected", () => {
-      alert("Your opponent has disconnected.\nRefresh game to play again.");
+      alert("Your opponent has disconnected.");
+      window.location.reload();
     });
 
     //game over
-    socket.on("game-over", playerNumber => {
+    socket.on("game-over", (playerNumber, playerScore, enemyScore) => {
       if (player.playerNumber == playerNumber) {
         setGameState("over");
         setIsWinner(true);
-        player.score++;
+        player.score = playerScore;
+        setOpponentScore(enemyScore);
       } else if (player.playerNumber != playerNumber) {
+        setOpponentScore(playerScore);
+        player.score = enemyScore;
         setGameState("over");
         setIsWinner(false);
       }
-    })
+    });
   }, []);
-
 
   //a board is clicked
   const handleClick = (boardType, i, j) => {
@@ -210,22 +233,23 @@ function Game(props) {
         if (player.turn) {
           //make sure user is in current board in order to try hit opponent
           if (stepNum == opponentBoardHistory.length - 1) {
-
             //use case - user clickes a square that he already clicked
             if (opponentBoard[i * boardSize + j] != "0") {
-              alert("square has already been hit!");
+              alert("Square has already been hit!");
               return;
             }
             checkHitOrMiss(i, j);
             //exchange turns between user and opponent
             socket.emit("exchange-turns", player);
             //user is in different board
-
           } else {
-            alert("Please return to current step\n in order to continue playing")
+            alert(
+              "Please return to current move\n in order to continue playing"
+            );
           }
-        }else{
-          alert("Wait for your turn")
+          //not user's turn
+        } else {
+          alert("Wait for your turn");
         }
       }
     }
@@ -259,12 +283,7 @@ function Game(props) {
   const playerReady = () => {
     setGameState("waiting");
     //send player board and ships placed
-    socket.emit(
-      "player-board",
-      player,
-      userBoard,
-      shipLengthAndVal,
-    );
+    socket.emit("player-board", player, userBoard, shipLengthAndVal);
     //send player ready
     socket.emit("player-ready", player);
     //both players ready
@@ -284,25 +303,24 @@ function Game(props) {
   //jump to earlier move
   const jumpTo = (step) => {
     stepCounter = step;
-    setStepNum(stepCounter)
+    setStepNum(stepCounter);
   };
 
   const moves = opponentBoardHistory.map((step, move) => {
-    const desc = move ?
-      `Show move #${move}` :
-      'Show start #0';
+    const desc = move ? `Show move #${move}` : "Show start #0";
     return (
       <li key={move}>
-        <button onClick={() => jumpTo(move)}>{desc}</button>
+        <button className="move-bttn" onClick={() => jumpTo(move)}>
+          {desc}
+        </button>
       </li>
     );
   });
 
-
-  //use case- rematch case, reset all values except score 
+  //use case- rematch case, reset all values except score
   const handleRematch = () => {
     socket.emit("rematch", player);
-    setGameState("rematch")
+    setGameState("rematch");
     socket.once("both-players-rematch", () => {
       shipsCounter = 0;
       placedShipValue = "A";
@@ -322,14 +340,11 @@ function Game(props) {
         value: "",
         length: "",
       });
-    })
-  }
+    });
+  };
   return (
     <>
-      <div className="heading-element">Waterbound Fighting Vessels
-        <div className="score">Score: {player.score}
-        </div>
-      </div>
+      <div className="heading-element">Waterbound Fighting Vessels</div>
       <hr />
       <br />
       <div className="view">
@@ -352,11 +367,27 @@ function Game(props) {
               </button>
             </h3>
           )}
-          {gameState == "waiting" && <h3>Waiting for opponent ...</h3>}
-          {gameState == "over" && (isWinner ? <h2>You win! 🎉🎉 <button className="top-bttn ship" onClick={handleRematch}>Rematch</button></h2> :
-            <h2>Better luck next time <button className="top-bttn ship" onClick={handleRematch}>Rematch</button></h2>)}
-          {gameState == "rematch" && <h3>Waiting for opponent ...</h3>}
-          {gameState == "start-game" && <h3>My board</h3>}
+          {gameState == "waiting" && <h3>Waiting for opponent ... </h3>}
+          {gameState == "over" &&
+            (isWinner ? (
+              <h2>
+                You win! 🎉🎉 Score: {player.score}{" "}
+                <button className="top-bttn ship" onClick={handleRematch}>
+                  Rematch
+                </button>
+              </h2>
+            ) : (
+              <h2>
+                Better luck next time, Score: {player.score}
+                <button className="top-bttn ship" onClick={handleRematch}>
+                  Rematch
+                </button>
+              </h2>
+            ))}
+          {gameState == "rematch" && <h3>Waiting for opponent ... </h3>}
+          {gameState == "start-game" && (
+            <h3>your board, your score: {player.score}</h3>
+          )}
           <div className="board-container">
             <Board
               onClick={(boardType, i, j) => handleClick(boardType, i, j)}
@@ -387,33 +418,42 @@ function Game(props) {
         </div>
         <div className="middle-side">
           {gameState == "start-game" && player.playerNumber == 1 && (
-            <h3 className="message">{isPlayerOneTurn ? "your turn!" : "opponents turn"}</h3>
+            <div className="message">
+              {isPlayerOneTurn ? "your turn! 😀" : "opponent's turn"}
+            </div>
           )}
           {gameState == "start-game" && player.playerNumber == 2 && (
-            <h3 className="message">{!isPlayerOneTurn ? "your turn!" : "opponents turn"}</h3>
+            <div className="message">
+              {!isPlayerOneTurn ? "your turn! 😀" : "opponent's turn"}
+            </div>
           )}
           <br />
-          {gameState == "start-game" && <><h3 className="history">
-            History</h3>
-            <ol>
-              {moves}
-            </ol>
-          </>
-          }
+          {gameState == "start-game" && (
+            <div className="moves">
+              <ol>{moves}</ol>
+            </div>
+          )}
         </div>
-
-        <div className="right-side">
-          {(gameState == "over" || gameState == "rematch") ? <h3>Opponent's board</h3> : <h3>Guess enemy's ship's placements!</h3>}
-          <div className="board-container">
-            <Board
-              onClick={(boardType, i, j) => handleClick(boardType, i, j)}
-              gameState={gameState}
-              boardSize={boardSize}
-              boardState={opponentBoardHistory[stepNum]}
-              boardType={"opponentBoard"}
-            />
+        {(gameState == "start-game" ||
+          gameState == "rematch" ||
+          gameState == "over") && (
+          <div className="right-side">
+            {(gameState == "start-game" ||
+              gameState == "rematch" ||
+              gameState == "over") && (
+              <h3>Opponent&#39;s board, {`Score: ${opponentScore}`}</h3>
+            )}
+            <div className="board-container">
+              <Board
+                onClick={(boardType, i, j) => handleClick(boardType, i, j)}
+                gameState={gameState}
+                boardSize={boardSize}
+                boardState={opponentBoardHistory[stepNum]}
+                boardType={"opponentBoard"}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );
