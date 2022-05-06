@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import io from "socket.IO-client";
 import Head from "next/head";
-import {SocketContext} from '../context/socketcontext';
+import { SocketContext } from "../context/socketcontext";
 import { WelcomeScreen } from "../components/WelcomeScreen";
 
 const Home = () => {
   const defaultSocketCtx = {
-    client_socket:{},
-    loading:true,
-  }
+    client_socket: {},
+    loading: true,
+  };
   let socket;
-  const [socketContext,setSocketContext] = useState(defaultSocketCtx);
+  const [socketContext, setSocketContext] = useState(defaultSocketCtx);
 
   const socketInitializer = async () => {
     await fetch("/api/socket");
@@ -18,16 +18,16 @@ const Home = () => {
     socket.once("connect", () => {
       console.log("connected client");
       setSocketContext({
-        client_socket:socket,
-        loading:false,
+        client_socket: socket,
+        loading: false,
       });
     });
   };
 
   useEffect(() => {
     socketInitializer();
-  },[]);
-  
+  }, []);
+
   return (
     <>
       <Head>
@@ -35,9 +35,9 @@ const Home = () => {
         <meta name="description" content="battleship game" />
         <link rel="icon" href="/battleship.png" />
       </Head>
-      
+
       <SocketContext.Provider value={socketContext}>
-      <WelcomeScreen />
+        <WelcomeScreen />
       </SocketContext.Provider>
     </>
   );
