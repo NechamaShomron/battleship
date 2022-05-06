@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import Square from "./Square";
 
-
 export default function Board(props) {
   const size = +props.boardSize;
-   //return each square
-   function renderSquare([i, j]) {
+  //return each square
+  function renderSquare([i, j]) {
     return (
       <Square
         value={props.value}
@@ -14,7 +13,7 @@ export default function Board(props) {
         position={[i, j]}
         onClick={() => props.onClick(props.boardType, i, j)}
         board={props.boardState}
-        boardType ={props.boardType}
+        boardType={props.boardType}
       />
     );
   }
@@ -29,9 +28,5 @@ export default function Board(props) {
     }
     return board;
   }
-  return (
-    <>
-      {createBoard()}
-    </>
-  );
+  return <>{createBoard()}</>;
 }
