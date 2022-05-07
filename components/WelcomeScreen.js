@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import Button from "@mui/material/Button";
 import SendIcon from "@mui/icons-material/Send";
 import Game from "./Game";
@@ -17,7 +17,7 @@ export const WelcomeScreen = () => {
 
   function showBoardComponent() {
     if (userInput < 10 || userInput > 15) {
-      alert("Board size must be 10 and above.");
+      alert("Board size must be between 10 and 15.");
       setBoardSize("");
     } else {
       setBoardSize(userInput);
