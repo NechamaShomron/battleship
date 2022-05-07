@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 
 let boardLength = "";
+let boardLengthForRooms = [];
 let players = [];
 
 const SocketHandler = (req, res) => {
@@ -44,7 +45,6 @@ const SocketHandler = (req, res) => {
           roomNumber,
           ready: false,
           playerNumber: 1,
-          boardsize: boardLength,
           playerOneBoard: [],
           playerOneShips: [],
           rematch: false,
@@ -56,7 +56,6 @@ const SocketHandler = (req, res) => {
           roomNumber,
           ready: false,
           playerNumber: 2,
-          boardsize: boardLength,
           playerTwoBoard: [],
           playerTwoShips: [],
           rematch: false,
@@ -64,16 +63,24 @@ const SocketHandler = (req, res) => {
         });
       }
 
+      socket.on("user-loggen-in", (id) => {
+        console.log(id);
+      });
+
       //getting board size
       socket.on("board-size-update", (boardsize) => {
-        boardLength = boardsize;
+        boardLengthForRooms.push({
+          roomNumber: roomNumber,
+          boardSize: boardsize,
+        });
       });
 
       //setting board size for both users
-      if (boardLength) {
-        io.to(roomNumber).emit("board-set", boardLength);
+      for (let i = 0; i < boardLengthForRooms.length; i++) {
+        if (roomNumber == boardLengthForRooms[i].roomNumber) {
+          io.to(roomNumber).emit("board-set", boardLengthForRooms[i].boardSize);
+        }
       }
-
       //giving player info to player client
       socket.on("player-in-game", () => {
         let currentPlayer = players.find((player) => {
