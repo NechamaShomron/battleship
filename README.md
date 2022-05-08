@@ -1,4 +1,5 @@
 # battleship_game
+npm install, run: npm run dev (on local host 3000)
 Made with Next js, node js & socket io.
 Deployed on heroku.
 User enters game and declares the board size for him and his opponent. 
