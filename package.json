@@ -17,9 +17,9 @@
     "cors": "^2.8.5",
     "express": "^4.17.3",
     "next": "12.1.4",
-    "react": "^17.0.0",
+    "react": "^17.0.2",
     "react-css-grid": "^2.0.0-0",
-    "react-dom": "17.0.0",
+    "react-dom": "17.0.2",
     "socket.io": "^4.4.1",
     "socket.io-adapter": "^2.4.0",
     "socket.io-client": "^4.4.1"
